@@ -1303,6 +1303,66 @@ attributes:
   expansion: is.special.job
   type: bool
   indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cancel_penalty
+  expansion: cancel.penalty
+  type: s64
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_revenue
+  expansion: revenue
+  type: s64
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_earned_xp
+  expansion: earned.xp
+  type: s32
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cargo_damage
+  expansion: cargo.damage
+  type: float
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_distance_km
+  expansion: distance.km
+  type: float
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_delivery_time
+  expansion: delivery.time
+  type: u32
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_park_used
+  expansion: auto.park.used
+  type: bool
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_load_used
+  expansion: auto.load.used
+  type: bool
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_offence
+  expansion: fine.offence
+  type: string
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_amount
+  expansion: fine.amount
+  type: s64
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount
+  expansion: pay.amount
+  type: s64
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_name
+  expansion: source.name
+  type: string
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_name
+  expansion: target.name
+  type: string
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_id
+  expansion: source.id
+  type: string
+  indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_id
+  expansion: target.id
+  type: string
+  indexed: false
 configurations:
 - macro: SCS_TELEMETRY_trailers_count
   expansion: '10'
@@ -1608,4 +1668,107 @@ configurations:
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_planned_distance_km
     expansion: planned_distance.km
     type: u32
+    indexed: false
+gameplay_events:
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled
+  expansion: job.cancelled
+  attributes:
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cancel_penalty
+    expansion: cancel.penalty
+    type: s64
+    indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered
+  expansion: job.delivered
+  attributes:
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_revenue
+    expansion: revenue
+    type: s64
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_earned_xp
+    expansion: earned.xp
+    type: s32
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cargo_damage
+    expansion: cargo.damage
+    type: float
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_distance_km
+    expansion: distance.km
+    type: float
+    indexed: false
+  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_delivery_time
+    expansion: delivery.time
+    type: u32
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_park_used
+    expansion: auto.park.used
+    type: bool
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_load_used
+    expansion: auto.load.used
+    type: bool
+    indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined
+  expansion: player.fined
+  attributes:
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_offence
+    expansion: fine.offence
+    type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_amount
+    expansion: fine.amount
+    type: s64
+    indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_player_tollgate_paid
+  expansion: player.tollgate.paid
+  attributes:
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount
+    expansion: pay.amount
+    type: s64
+    indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_ferry
+  expansion: player.use.ferry
+  attributes:
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount
+    expansion: pay.amount
+    type: s64
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_name
+    expansion: source.name
+    type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_name
+    expansion: target.name
+    type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_id
+    expansion: source.id
+    type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_id
+    expansion: target.id
+    type: string
+    indexed: false
+- macro: SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_train
+  expansion: player.use.train
+  attributes:
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount
+    expansion: pay.amount
+    type: s64
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_name
+    expansion: source.name
+    type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_name
+    expansion: target.name
+    type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_id
+    expansion: source.id
+    type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_id
+    expansion: target.id
+    type: string
     indexed: false

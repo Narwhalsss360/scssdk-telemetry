@@ -107,7 +107,7 @@ class Telemetry:
 
 
 @dataclass
-class ConfigurationAttribute:
+class TelemetryEventAttribute:
     macro: str
     expansion: str
     type: str
@@ -118,26 +118,39 @@ class ConfigurationAttribute:
 class Configuration:
     macro: str
     expansion: str
-    attributes: list[ConfigurationAttribute]
+    attributes: list[TelemetryEventAttribute]
 
     def __post_init__(self) -> None:
         for i in range(len(self.attributes)):
             if isinstance(self.attributes[i], dict):
-                self.attributes[i] = ConfigurationAttribute(**self.attributes[i])
+                self.attributes[i] = TelemetryEventAttribute(**self.attributes[i])
+
+
+@dataclass
+class GameplayEvent:
+    macro: str
+    expansion: str
+    attributes: list[TelemetryEventAttribute]
+
+    def __post_init__(self) -> None:
+        for i in range(len(self.attributes)):
+            if isinstance(self.attributes[i], dict):
+                self.attributes[i] = TelemetryEventAttribute(**self.attributes[i])
 
 
 SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
 
 
-def load() -> tuple[list[Telemetry], list[ConfigurationAttribute], list[Configuration]]:
+def load() -> tuple[list[Telemetry], list[TelemetryEventAttribute], list[Configuration], list[GameplayEvent]]:
     if not isfile(SCSSDK_TELEMETRY_FILE):
         raise FileNotFoundError(f"File {SCSSDK_TELEMETRY_FILE} doesn't exist")
     with open(SCSSDK_TELEMETRY_FILE, encoding="utf-8") as file:
         scssdk: dict = json.loads(file.read())
     return (
         [Telemetry(**telemetry) for telemetry in scssdk["telemetries"]],
-        [ConfigurationAttribute(**attribute) for attribute in scssdk["attributes"]],
+        [TelemetryEventAttribute(**attribute) for attribute in scssdk["attributes"]],
         [Configuration(**configuration) for configuration in scssdk["configurations"]],
+        [GameplayEvent(**gameplay_event) for gameplay_event in scssdk["gameplay_events"]],
     )
 
 
@@ -154,9 +167,9 @@ def yamlfy() -> None:
 
 
 def main() -> None:
-    telemetries, attributes, configurations = load()
+    telemetries, attributes, configurations, gameplay_events = load()
     print(
-        f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes and {len(configurations)} configurations."
+        f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
     )
     yamlfy()
 
