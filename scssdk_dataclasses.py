@@ -69,11 +69,16 @@ SHORT_TYPENAME_TO_TYPE: dict[str, str] = {
 
 
 def id_of_type(type: str) -> int:
-    if (index := TYPE_MACROS_BY_ID.index(type)) != -1:
-        return index
-    if (index := TYPES_BY_ID.index(type)) != -1:
-        return index
-    return TYPES_BY_ID.index(SHORT_TYPENAME_TO_TYPE.get(type))
+    try:
+        return TYPE_MACROS_BY_ID.index(type)
+    except ValueError:
+        try:
+            return TYPES_BY_ID.index(type)
+        except ValueError:
+            try:
+                return TYPES_BY_ID.index(SHORT_TYPENAME_TO_TYPE.get(type))
+            except ValueError:
+                return -1
 
 
 @dataclass
