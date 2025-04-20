@@ -10,7 +10,7 @@ STORE_INSTANCE_NAME: str = 'game_data'
 STORE_FUNCTION_NAME: str = 'store'
 
 
-def containers() -> str:
+def cpp_containers() -> str:
     return (
         'template <typename T>\n'
         f'struct {VALUE_STORAGE_STRUCT_NAME} {{\n'
@@ -27,7 +27,7 @@ def containers() -> str:
     )
 
 
-def store_struct(telemetries: list[Telemetry]) -> str:
+def cpp_store_struct(telemetries: list[Telemetry]) -> str:
     out: str = f'struct {TRAILER_DATA_STRUCT_NAME} {{\n'
     for trailer_telemetry in filter(lambda t: t.is_trailer_channel, telemetries):
         if trailer_telemetry.indexed:
@@ -113,8 +113,8 @@ def main() -> None:
             f.write(registration)
         f.write('}\n')
     with open('store.gitignore.cpp', 'w', encoding='utf-8') as f:
-        f.write(containers())
-        f.write(store_struct(telemetries))
+        f.write(cpp_containers())
+        f.write(cpp_store_struct(telemetries))
 
 
 if __name__ == '__main__':
