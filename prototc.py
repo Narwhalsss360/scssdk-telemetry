@@ -1,4 +1,4 @@
-from scssdk_dataclasses import Telemetry, TYPE_MACROS_BY_ID, SCS_TELEMETRY_trailers_count, load
+from scssdk_dataclasses import Telemetry, TYPE_MACROS_BY_ID, SCS_TELEMETRY_trailers_count, load, TYPE_SIZE_BY_ID
 
 
 VALUE_STORAGE_STRUCT_NAME: str = 'value_storage'
@@ -22,6 +22,7 @@ def cpp_containers() -> str:
         f'struct {VALUE_ARRAY_STORAGE_STRUCT_NAME} {{\n'
         '\tstd::array<T, max_count> values;\n'
         '\tbool initialized = false;\n'
+        '\tuint32_t size = 0;\n'
         '};\n'
         '\n'
     )
@@ -41,7 +42,7 @@ def cpp_store_struct(telemetries: list[Telemetry]) -> str:
     out += (
         '};\n'
         '\n'
-        f'struct {STORE_STRUCT_NAME}{{\n'
+        f'struct {STORE_STRUCT_NAME} {{\n'
     )
 
     for telemetry in filter(lambda t: not t.is_trailer_channel and not t.is_event, telemetries):
@@ -52,7 +53,7 @@ def cpp_store_struct(telemetries: list[Telemetry]) -> str:
             container_type: str = VALUE_STORAGE_STRUCT_NAME
             template_args: str = telemetry.scs_type
         out += f'\t{container_type}<{template_args}> {telemetry.simple_name};\n'
-    out += f'\t{TRAILER_DATA_STRUCT_NAME} {TRAILER_DATA_INSTANCE_NAME};\n'
+    out += f'\tstd::array<{TRAILER_DATA_STRUCT_NAME}, {SCS_TELEMETRY_trailers_count}> {TRAILER_DATA_INSTANCE_NAME};\n'
     out += '};\n\n'
     return out
 
@@ -102,11 +103,84 @@ def registrations_for(telemetries: list[Telemetry], trailer_count: int = SCS_TEL
         yield out
 
 
+def trailer_data_size(telemetries: list[Telemetry]) -> int:
+    size: int = 0
+    for telemetry in telemetries:
+        if not telemetry.is_trailer_channel:
+            continue
+        count: int = telemetry.max_count if telemetry.indexed else 1 
+        if count != 1:
+            size += 4
+        size += (count * TYPE_SIZE_BY_ID[telemetry.scs_type_id]) + 1
+
+    return size
+
+
+def trailer_data_offset(telemetries: list[Telemetry]) -> int:
+    offset: int = 0
+    for telemetry in telemetries:
+        if telemetry.is_trailer_channel or telemetry.is_event:
+            continue
+        count: int = telemetry.max_count if telemetry.indexed else 1 
+        if count != 1:
+            offset += 4
+        offset += (count * TYPE_SIZE_BY_ID[telemetry.scs_type_id]) + 1
+    return offset
+
+
+def trailer_data_offset_of(telemetries: list[Telemetry], telemetry: Telemetry) -> tuple[int, int, int]:
+    if not telemetry.is_trailer_channel:
+        raise ValueError('Telemetry is not a trailer channel')
+
+
+    offset: int = 0
+    for other in telemetries:
+        if not other.is_trailer_channel or other.is_event:
+            continue
+        if other.id == telemetry.id:
+            break
+        count: int = other.max_count if other.indexed else 1 
+        if count != 1:
+            offset += 4
+        offset += (count * TYPE_SIZE_BY_ID[other.scs_type_id]) + 1
+
+    count: int = telemetry.max_count if telemetry.indexed else 1 
+    initialized_offset: int = offset + (count * TYPE_SIZE_BY_ID[telemetry.scs_type_id])
+    size_offset: int = initialized_offset + 1
+    return offset, initialized_offset, size_offset
+
+
+def offsets_of(telemetries: list[Telemetry], telemetry: Telemetry, trailer_index: int = -1) -> tuple[int, int, int]:
+    offset: int = 0
+    if telemetry.is_trailer_channel or trailer_index != -1:
+        if not (0 <= trailer_index <= SCS_TELEMETRY_trailers_count):
+            raise IndexError(f'trailer_index must be within [0, {SCS_TELEMETRY_trailers_count})')
+
+        origin: int = trailer_data_size() * (trailer_index + 1)
+        return tuple(origin + offset for offset in trailer_data_offset_of(telemetries, telemetry, trailer_index))
+
+    for other in telemetries:
+        if other.is_trailer_channel or other.is_event:
+            continue
+        if other.id == telemetry.id:
+            break
+        count: int = other.max_count if other.indexed else 1 
+        if count != 1:
+            offset += 4
+        offset += (count * TYPE_SIZE_BY_ID[other.scs_type_id]) + 1
+
+    count: int = telemetry.max_count if telemetry.indexed else 1 
+    initialized_offset: int = offset + (count * TYPE_SIZE_BY_ID[telemetry.scs_type_id])
+    size_offset: int = initialized_offset + 1
+    return offset, initialized_offset, size_offset
+
+
 def main() -> None:
     telemetries, attributes, configurations, gameplay_events = load()
     print(
         f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
     )
+
     with open('registrations.gitignore.cpp', 'w', encoding='utf-8') as f:
         f.write('void register_all(scs_telemetry_register_for_channel_t register_for_channel) {\n')
         for registration in registrations_for(telemetries):
