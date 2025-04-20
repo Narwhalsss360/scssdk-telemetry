@@ -68,6 +68,13 @@ SHORT_TYPENAME_TO_TYPE: dict[str, str] = {
 }
 
 
+TYPE_SIZE_BY_ID: list[int] = [0, 1, 4, 4, 8, 4, 8, 12, 24, 12, 24, 40, 0, 8]
+
+PADDING_BY_TYPE: dict[str, dict[str, int]] = (
+    {"scs_value_dplacement_t": {"offset": 36, "size": 4}},
+)
+
+
 def id_of_type(type: str) -> int:
     try:
         return TYPE_MACROS_BY_ID.index(type)
@@ -146,7 +153,12 @@ class GameplayEvent:
 SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
 
 
-def load() -> tuple[list[Telemetry], list[TelemetryEventAttribute], list[Configuration], list[GameplayEvent]]:
+def load() -> tuple[
+    list[Telemetry],
+    list[TelemetryEventAttribute],
+    list[Configuration],
+    list[GameplayEvent],
+]:
     if not isfile(SCSSDK_TELEMETRY_FILE):
         raise FileNotFoundError(f"File {SCSSDK_TELEMETRY_FILE} doesn't exist")
     with open(SCSSDK_TELEMETRY_FILE, encoding="utf-8") as file:
@@ -155,7 +167,10 @@ def load() -> tuple[list[Telemetry], list[TelemetryEventAttribute], list[Configu
         [Telemetry(**telemetry) for telemetry in scssdk["telemetries"]],
         [TelemetryEventAttribute(**attribute) for attribute in scssdk["attributes"]],
         [Configuration(**configuration) for configuration in scssdk["configurations"]],
-        [GameplayEvent(**gameplay_event) for gameplay_event in scssdk["gameplay_events"]],
+        [
+            GameplayEvent(**gameplay_event)
+            for gameplay_event in scssdk["gameplay_events"]
+        ],
     )
 
 
