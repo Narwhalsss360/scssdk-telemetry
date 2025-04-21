@@ -200,12 +200,7 @@ def offsets_of(
     return offset, initialized_offset, size_offset
 
 
-def main() -> None:
-    telemetries, attributes, configurations, gameplay_events = load()
-    print(
-        f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
-    )
-
+def generate_cpp(telemetries: list[Telemetry]) -> None:
     with open("registrations.gitignore.cpp", "w", encoding="utf-8") as f:
         f.write(
             "void register_all(scs_telemetry_register_for_channel_t register_for_channel) {\n"
@@ -216,6 +211,14 @@ def main() -> None:
     with open("store.gitignore.cpp", "w", encoding="utf-8") as f:
         f.write(cpp_containers())
         f.write(cpp_store_struct(telemetries))
+
+
+def main() -> None:
+    telemetries, attributes, configurations, gameplay_events = load()
+    print(
+        f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
+    )
+    generate_cpp(telemetries)
 
 
 if __name__ == "__main__":
