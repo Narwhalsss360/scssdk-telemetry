@@ -1,3 +1,4 @@
+from typing import Iterator
 from scssdk_dataclasses import Telemetry, TYPE_MACROS_BY_ID, SCS_TELEMETRY_trailers_count, load, TYPE_SIZE_BY_ID
 
 
@@ -58,7 +59,7 @@ def cpp_store_struct(telemetries: list[Telemetry]) -> str:
     return out
 
 
-def registrations_for(telemetries: list[Telemetry], trailer_count: int = SCS_TELEMETRY_trailers_count, tabs: int = 1) -> str:
+def registrations_for(telemetries: list[Telemetry], trailer_count: int = SCS_TELEMETRY_trailers_count, tabs: int = 1) -> Iterator[str]:
     tab_str: str = '\t' * tabs
     out: str
     for telemetry in telemetries:
