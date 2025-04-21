@@ -133,6 +133,19 @@ def trailer_data_size(telemetries: list[Telemetry]) -> int:
     return size
 
 
+def store_size(telemetries: list[Telemetry]) -> int:
+    size: int = 0
+    for telemetry in telemetries:
+        if telemetry.is_trailer_channel or telemetry.is_event:
+            continue
+        count: int = telemetry.max_count if telemetry.indexed else 1
+        if count != 1:
+            size += 4
+        size += (count * TYPE_SIZE_BY_ID[telemetry.scs_type_id]) + 1
+
+    return SCS_TELEMETRY_trailers_count * trailer_data_size(telemetries) + size
+
+
 def trailer_data_offset(telemetries: list[Telemetry]) -> int:
     offset: int = 0
     for telemetry in telemetries:
