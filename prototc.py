@@ -635,9 +635,9 @@ def configuration_structs(configurations: list[Configuration]) -> str:
         for attribute in configuration.attributes:
             type_name: str = "std::string" if attribute.type == "string" else SHORT_TYPENAME_TO_TYPE[attribute.type]
             if attribute.indexed:
-                out += f"\tstd::vector<{type_name}> {attribute_simple_name(attribute)};\n"
+                out += f"\tstd::vector<{type_name}> {attribute_simple_name(attribute)} = {{}};\n"
             else:
-                out += f"\t{type_name} {attribute_simple_name(attribute)};\n"
+                out += f"\t{type_name} {attribute_simple_name(attribute)} = {{}};\n"
         out += "};\n\n"
 
     return out
