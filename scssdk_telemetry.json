@@ -1781,7 +1781,7 @@
                     "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_id",
                     "expansion": "id",
                     "type": "string",
-                    "indexed": false
+                    "indexed": true
                 }
             ]
         },
