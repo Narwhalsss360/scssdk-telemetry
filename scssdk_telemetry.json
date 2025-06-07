@@ -2054,8 +2054,8 @@
                     "indexed": false
                 },
                 {
-                    "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_id",
-                    "expansion": "id",
+                    "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand_id",
+                    "expansion": "brand_id",
                     "type": "string",
                     "indexed": false
                 },
