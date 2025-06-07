@@ -1406,7 +1406,7 @@ configurations:
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_selector_count
     expansion: selector.count
     type: u32
-    indexed: false
+    indexed: true
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_slot_gear
     expansion: slot.gear
     type: s32
@@ -1486,6 +1486,10 @@ configurations:
     expansion: gears.reverse
     type: u32
     indexed: false
+  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_differential_ratio
+    expansion: differential.ratio
+    type: float
+    indexed: true
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_retarder_step_count
     expansion: retarder.steps
     type: u32
@@ -1494,6 +1498,14 @@ configurations:
     expansion: cabin.position
     type: fvector
     indexed: false
+  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_forward_ratio
+    expansion: forward.ratio
+    type: float
+    indexed: true
+  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_reverse_ratio
+    expansion: reverse.ratio
+    type: float
+    indexed: true
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_head_position
     expansion: head.position
     type: fvector
