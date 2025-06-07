@@ -1,53 +1,92 @@
 from socket import socket, AddressFamily, SocketKind, IPPROTO_TCP, SHUT_RDWR
 from struct import unpack
-from prototc import Telemetry, load, offsets_of, store_size, TYPE_SIZE_BY_ID
+from scssdk_dataclasses import load, Telemetry, TYPE_SIZE_BY_ID
+from prototc import store_size, offsets_of
 
-HOST: str = '127.0.0.1'
-PORT: int = 10203
+try:
+    from nstreamcom import Collector, CollectorStates, encode_with_size
+except ImportError:
+    print("Ensure nstreamcom is installed. extern/NStreamCom")
+    exit()
+
+HOST: str = "127.0.0.1"
+PORT: int = 52878
 ENDPOINT: tuple[str, str] = (HOST, PORT)
-
 
 telemetries, attributes, configurations, gameplay_events = load()
 STORE_SIZE: int = store_size(telemetries)
 
-speed: Telemetry = next(filter(lambda t: t.id == 38, telemetries))
-speed_size: int = TYPE_SIZE_BY_ID[speed.scs_type_id]
+speed_telemetry: Telemetry = next(
+    filter(lambda t: t.macro == "SCS_TELEMETRY_TRUCK_CHANNEL_speed", telemetries)
+)
+speed_offset, speed_initialized_offset, _ = offsets_of(telemetries, speed_telemetry)
+speed_size, speed_initialized_size = TYPE_SIZE_BY_ID[speed_telemetry.scs_type_id], 1
+rpm_telemetry: Telemetry = next(
+    filter(lambda t: t.macro == "SCS_TELEMETRY_TRUCK_CHANNEL_engine_rpm", telemetries)
+)
+rpm_offset, rpm_initialized_offset, _ = offsets_of(telemetries, rpm_telemetry)
+rpm_size, rpm_initialized_size = TYPE_SIZE_BY_ID[rpm_telemetry.scs_type_id], 1
 
-rpm: Telemetry = next(filter(lambda t: t.id == 39, telemetries))
-rpm_size: int = TYPE_SIZE_BY_ID[rpm.scs_type_id]
 
-light_lblinker: Telemetry = next(filter(lambda t: t.id == 79, telemetries))
-light_lblinker_size: int = TYPE_SIZE_BY_ID[light_lblinker.scs_type_id]
+def get_data(game: socket) -> None:
+    game.sendall(encode_with_size(b"\x01"))
 
-light_rblinker: Telemetry = next(filter(lambda t: t.id == 80, telemetries))
-light_rblinker_size: int = TYPE_SIZE_BY_ID[light_rblinker.scs_type_id]
-
-speed_offset, speed_initialized_offset, _ = offsets_of(telemetries, speed)
-rpm_offset, rpm_initialized_offset, _ = offsets_of(telemetries, rpm)
-light_lblinker_offset, light_lblinker_initialized_offset, _ = offsets_of(telemetries, light_lblinker)
-light_rblinker_offset, light_rblinker_initialized_offset, _ = offsets_of(telemetries, light_rblinker)
-
-game = socket(AddressFamily.AF_INET, SocketKind.SOCK_STREAM, IPPROTO_TCP)
-game.connect(ENDPOINT)
-while True:
-    try:
-        recv: bytes = game.recv(STORE_SIZE)
-        if not recv:
+    collector: Collector = Collector()
+    while collector.state in (CollectorStates.WaitingSize, CollectorStates.WaitingData):
+        if not (recv := game.recv(1)):
             break
-        data_speed, speed_initialized = unpack('f', recv[speed_offset:speed_offset + speed_size])[0], recv[speed_initialized_offset] > 0
-        data_rpm, rpm_initialized = unpack('f', recv[rpm_offset:rpm_offset + rpm_size])[0], recv[rpm_initialized_offset] > 0
-        data_light_lblinker, light_lblinker_initialized = recv[light_lblinker_offset] > 0, recv[light_lblinker_initialized_offset] > 0
-        data_light_rblinker, light_rblinker_initialized = recv[light_rblinker_offset] > 0, recv[light_rblinker_initialized_offset] > 0
+        collector.collect(recv[0])
 
-        speed_str: str = f'{data_speed:02.02f} m/s' if speed_initialized else '?'
-        rpm_str: str = f'{data_rpm:04.0f} rpm' if rpm_initialized else '?'
-        lblinker_str: str = f'{'<' if data_light_lblinker else '-'}' if light_lblinker_initialized else '?'
-        rblinker_str: str = f'{'>' if data_light_rblinker else '-'}' if light_rblinker_initialized else '?'
+    if not collector.state == CollectorStates.Collected:
+        print(f"Collector error: {collector.state}")
+        return
 
-        print(f'{speed_str} | {rpm_str} | {lblinker_str}{rblinker_str}')
+    request: int = int(collector.bytearray[0])
 
-    except KeyboardInterrupt:
-        break
+    if request != 1:
+        print("Received reply for other request")
+        return
 
-game.shutdown(SHUT_RDWR)
-game.close()
+    speed: float = unpack(
+        "f", collector.bytearray[1 + speed_offset : 1 + speed_offset + speed_size]
+    )[0]
+    speed_initialized: bool = unpack(
+        "?",
+        collector.bytearray[
+            1 + speed_initialized_offset : 1
+            + speed_initialized_offset
+            + speed_initialized_size
+        ],
+    )[0]
+    rpm: float = unpack(
+        "f", collector.bytearray[1 + rpm_offset : 1 + rpm_offset + rpm_size]
+    )[0]
+    rpm_initialized: bool = unpack(
+        "?",
+        collector.bytearray[
+            1 + rpm_initialized_offset : 1
+            + rpm_initialized_offset
+            + rpm_initialized_size
+        ],
+    )[0]
+
+    print(f"{speed :02.03f}" if speed_initialized else "---", end="")
+    print(" m/s | ", end="")
+    print(f"{rpm :04.0f}" if rpm_initialized else "---", end="")
+    print(" rpm \r")
+
+
+def main(game: socket) -> None:
+    while True:
+        try:
+            get_data(game)
+        except KeyboardInterrupt:
+            return
+
+
+if __name__ == "__main__":
+    game = socket(AddressFamily.AF_INET, SocketKind.SOCK_STREAM, IPPROTO_TCP)
+    game.connect(ENDPOINT)
+    main(game)
+    game.shutdown(SHUT_RDWR)
+    game.close()
