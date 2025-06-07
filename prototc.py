@@ -2,12 +2,15 @@ from typing import Iterator
 from os.path import join
 from scssdk_dataclasses import (
     Telemetry,
+    Configuration,
+    TelemetryEventAttribute,
     TYPE_MACROS_BY_ID,
     SCS_TELEMETRY_trailers_count,
     load,
     TYPE_SIZE_BY_ID,
     TYPES_BY_ID,
     CPP_INVALID_TYPE,
+    SHORT_TYPENAME_TO_TYPE
 )
 
 
@@ -510,7 +513,177 @@ def register_all_function(telemetries: list[Telemetry]) -> str:
     return out
 
 
-def generate_cpp(telemetries: list[Telemetry], output_folder: str = '.') -> None:
+def event_info_simple_name(configuration: Configuration) -> str:
+    return configuration.macro.replace("SCS_TELEMETRY_CONFIG_", "")
+
+
+def attribute_simple_name(attribute: TelemetryEventAttribute) -> str:
+    return attribute.macro.replace("SCS_TELEMETRY_CONFIG_ATTRIBUTE_", "")
+
+
+def event_info_to_bytes_function(configuration: Configuration) -> str:
+    out: str = f"void to_bytes(const {event_info_simple_name(configuration)}& info, std::vector<uint8_t>& out) {{\n"
+
+
+    out += "\tout.resize(1);\n"
+    out += "\t*out.data() = info.information;\n"
+    out += "\tsize_t offset = 1;\n\n"
+
+    for i, attribute in enumerate(configuration.attributes):
+        type_name: str = SHORT_TYPENAME_TO_TYPE[attribute.type]
+        identifier: str = attribute_simple_name(attribute)
+        if attribute.type == "string":
+            if attribute.indexed:
+                out += (
+                    f"\tout.resize(offset + 1);\n"
+                    f"\tout[offset] = static_cast<uint8_t>(info.{identifier}.size());\n"
+                    "\toffset += 1;\n"
+                    f"\tfor (size_t i = 0; i < info.{identifier}.size(); i++) {{\n"
+                    f"\t\tout.resize(offset + info.{identifier}[i].size() + 1);\n"
+                    f"\t\tstd::copy(info.{identifier}[i].begin(), info.{identifier}[i].end(), out.begin() + offset);\n"
+                    f"\t\tout[offset + info.{identifier}[i].size()] = 0;\n"
+                    f"\t\toffset += info.{identifier}[i].size() + 1;\n"
+                    "\t}\n"
+                )
+            else:
+                out += (
+                    "\toffset = out.size();\n"
+                    f"\tout.resize(offset + info.{identifier}.size() + 1);\n"
+                    f"\tstd::copy(info.{identifier}.begin(), info.{identifier}.end(), out.begin() + offset);\n"
+                    f"\tout[offset + info.{identifier}.size()] = 0;\n"
+                )
+        elif attribute.indexed:
+            out += (
+                f"\tout.resize(offset + 1 + sizeof({type_name}) * info.{identifier}.size());\n"
+                f"\tout[offset] = static_cast<uint8_t>(info.{identifier}.size());\n"
+                f"\tmemcpy(out.data() + offset + 1, info.{identifier}.data(), sizeof({type_name}) * info.{identifier}.size());\n"
+                f"\toffset += 1 + sizeof({type_name}) * info.{identifier}.size();\n"
+            )
+        else:
+            out += (
+                f"\tout.resize(offset + sizeof({type_name}));\n"
+                f"\t*reinterpret_cast<{type_name}*>(out.data() + offset) = info.{identifier};\n"
+                f"\toffset += sizeof({type_name});\n"
+            )
+        if i != len(configuration.attributes) - 1:
+            out += "\n"
+
+    out += "}\n"
+    return out
+
+
+def event_info_from_bytes_function(configuration: Configuration) -> str:
+    out: str = f"void from_bytes(const std::vector<uint8_t>& bytes, {event_info_simple_name(configuration)}& out) {{\n"
+
+    out += "\tout.information = bytes[0];\n"
+    out += "\tsize_t offset = 1;\n\n"
+    size_initialized: bool = False
+
+    for i, attribute in enumerate(configuration.attributes):
+        type_name: str = SHORT_TYPENAME_TO_TYPE[attribute.type]
+        identifier: str = attribute_simple_name(attribute)
+        if attribute.type == "string":
+            if attribute.indexed:
+                out += (
+                    f"\t{'' if size_initialized else 'uint8_t '}size = bytes[offset];\n"
+                    "\toffset++;\n"
+                    f"\tout.{identifier}.clear();\n"
+                    "\tfor (int i = 0; i < size; i++) {\n"
+                    f"\t\tout.{identifier}.push_back(std::string(reinterpret_cast<const char*>(bytes.data() + offset)));\n"
+                    f"\t\toffset += out.{identifier}.back().size() + 1;\n"
+                    "\t}\n"
+                )
+                size_initialized = True
+            else:
+                out += (
+                    f"\tout.{identifier}.clear();\n"
+                    "\tfor (; bytes[offset] != 0; offset++) {\n"
+                    f"\t\tout.{identifier} += static_cast<char>(bytes[offset]);\n"
+                    "\t}\n"
+                )
+        elif attribute.indexed:
+            out += (
+                f"\t{'' if size_initialized else 'uint8_t '}size = bytes[offset];\n"
+                "\toffset++;\n"
+                f"\tout.{identifier}.clear();\n"
+                "\tfor (int i = 0; i < size; i++) {\n"
+                f"\t\tout.{identifier}.push_back(*reinterpret_cast<const {type_name}*>(bytes.data() + offset));\n"
+                f"\t\toffset += sizeof({type_name});\n"
+                "\t}\n"
+            )
+            size_initialized = True
+        else:
+            out += (
+                f"\tout.{identifier} = *reinterpret_cast<const {type_name}*>(bytes.data() + offset);\n"
+                f"\toffset += sizeof({type_name});\n"
+            )
+        if i != len(configuration.attributes) - 1:
+            out += "\n"
+
+    out += "}\n"
+    return out
+
+
+def configuration_structs(configurations: list[Configuration]) -> str:
+    out: str = ""
+    for configuration in configurations:
+        if not configuration.attributes:
+            continue
+
+        out += f"struct {event_info_simple_name(configuration)} {{\n"
+        out += "\tuint8_t information = 0;\n"
+        for attribute in configuration.attributes:
+            type_name: str = "std::string" if attribute.type == "string" else SHORT_TYPENAME_TO_TYPE[attribute.type]
+            if attribute.indexed:
+                out += f"\tstd::vector<{type_name}> {attribute_simple_name(attribute)};\n"
+            else:
+                out += f"\t{type_name} {attribute_simple_name(attribute)};\n"
+        out += "};\n\n"
+
+    return out
+
+
+def to_bytes_functions(configurations: list[Configuration]) -> str:
+    out: str = ""
+    for configuration in configurations:
+        if not configuration.attributes:
+            continue
+        out += f"{event_info_to_bytes_function(configuration)}\n"
+    return out
+
+
+def from_bytes_functions(configurations: list[Configuration]) -> str:
+    out: str = ""
+    for configuration in configurations:
+        if not configuration.attributes:
+            continue
+        out += f"{event_info_from_bytes_function(configuration)}\n"
+    return out
+
+
+def event_info_struct_offsets_expr(configuration: Configuration) -> str:
+    out: str = "{\n"
+
+    for i, attribute in enumerate(configuration.attributes):
+        out += f"\t{{ \"{attribute.expansion}\", offsetof({event_info_simple_name(configuration)}, {attribute_simple_name(attribute)}) }}"
+        if i != len(configuration.attributes) - 1:
+            out += ","
+        out += "\n"
+
+    out += "}"
+    return out
+
+
+def event_infos_struct_offsets(configurations: list[Configuration]) -> str:
+    out: str = ""
+    for configuration in configurations:
+        if not configuration.attributes:
+            continue
+        out += f"const std::unordered_map<std::string, size_t> {event_info_simple_name(configuration)}_offsets ={event_info_struct_offsets_expr(configuration)};\n\n"
+    return out
+
+
+def generate_cpp(telemetries: list[Telemetry], configurations: list[Configuration], output_folder: str = '.') -> None:
     with open(join(output_folder, "sizes.test.gitignore.cpp"), "w", encoding="utf-8") as f:
         f.write(sizes_test(telemetries))
     with open(join(output_folder, "offset.test.gitignore.cpp"), "w", encoding="utf-8") as f:
@@ -534,14 +707,27 @@ def generate_cpp(telemetries: list[Telemetry], output_folder: str = '.') -> None
         f.write(f"{cpp_store_struct(telemetries)}\n")
     with open(join(output_folder, "telemetry_info_types.gitignore.h"), "w", encoding="utf-8") as f:
         f.write(telemtry_info_types(telemetries, 2))
+    with open(join(output_folder, "configurations.gitignore.h"), "w", encoding="utf-8") as f:
+        f.write(configuration_structs(configurations))
+        f.write("\n")
+        f.write(event_infos_struct_offsets(configurations))
+        f.write("\n")
+        f.write(to_bytes_functions(configurations))
+        f.write("\n")
+        f.write(from_bytes_functions(configurations))
 
 
 def main() -> None:
     telemetries, attributes, configurations, gameplay_events = load()
+
+    if configurations[5].attributes[3].expansion == "id":
+        print("Applying temporary fix")
+        configurations[5].attributes.pop(3)
+
     print(
         f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
     )
-    generate_cpp(telemetries)
+    generate_cpp(telemetries, configurations)
 
 
 if __name__ == "__main__":
