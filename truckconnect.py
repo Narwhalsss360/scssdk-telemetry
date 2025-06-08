@@ -1,7 +1,7 @@
 from __future__ import annotations
 from enum import Enum
 from dataclasses import dataclass, field
-from scssdk_dataclasses import Channel, Event, EventInfo, load
+from scssdk_dataclasses import Channel, Event, EventInfo, EventAttribute, load, TYPE_SIZE_BY_ID
 
 
 TELEMETRY_EVENTS: str = [
@@ -9,6 +9,33 @@ TELEMETRY_EVENTS: str = [
     "SCS_TELEMETRY_EVENT_gameplay",
 ]
 INVALID_TELEMETRY_ID: int = -1
+
+VALUE_STORAGE_TYPE_NAME: str = "value_storage"
+VALUE_STORAGE_EXTRA_SIZE: int = 1
+VALUE_ARRAY_STORAGE_TYPE_NAME: str = "value_array_storage"
+VALUE_ARRAY_STORAGE_EXTRA_SIZE: int = 1 + 4
+VALUE_VECTOR_STORAGE_TYPE_NAME: str = "value_vector_storage"
+VALUE_VECTOR_STORAGE_EXTRA_SIZE: int = 1
+
+def scs_type_id_storage_size(scs_type_id: int) -> int:
+    return TYPE_SIZE_BY_ID[scs_type_id] + VALUE_STORAGE_EXTRA_SIZE
+
+
+def channel_storage(channel: Channel) -> tuple[str, int]:
+    return f"{VALUE_ARRAY_STORAGE_TYPE_NAME if channel.indexed else VALUE_STORAGE_TYPE_NAME}<{channel.primitive_type}>", scs_type_id_storage_size(channel.scs_type_id) * channel.max_count
+
+
+def attribute_storage(attribute: EventAttribute) -> str:
+    return f"{VALUE_VECTOR_STORAGE_TYPE_NAME if attribute.indexed else VALUE_STORAGE_TYPE_NAME}<{attribute.primitive_type}>"
+
+
+def storage(telemetry_or_attr: Telemetry | EventAttribute) -> tuple[str, int]:
+    if telemetry_or_attr.is_channel:
+        return channel_storage(telemetry_or_attr.as_channel)
+    elif isinstance(telemetry_or_attr, EventAttribute):
+        return attribute_storage(telemetry_or_attr), None
+
+    assert False, "Can only get storage of a channel or event attribute"
 
 
 class ChannelCategory(Enum):
