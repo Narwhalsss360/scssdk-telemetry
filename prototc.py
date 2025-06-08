@@ -683,6 +683,27 @@ def event_infos_struct_offsets(configurations: list[Configuration]) -> str:
     return out
 
 
+def configuraion_indexed_attributes(configuration: Configuration) -> str:
+    out: str = f"const std::set<std::string> {event_info_simple_name(configuration)}_indexed ={{\n"
+    indexed: list[TelemetryEventAttribute] = list(filter(lambda a: a.indexed, configuration.attributes))
+    for i, attribute in enumerate(indexed):
+        out += f"\t\"{attribute.expansion}\""
+        if i != len(indexed) - 1:
+            out += ","
+        out += "\n"
+    out += "};\n"
+    return out
+
+
+def configurations_indexed_attributes(configurations: list[Configuration]) -> str:
+    out: str = ""
+    for configuration in configurations:
+        if not configuration.attributes:
+            continue
+        out += f"{configuraion_indexed_attributes(configuration)}\n"
+    return out
+
+
 def generate_cpp(telemetries: list[Telemetry], configurations: list[Configuration], output_folder: str = '.') -> None:
     with open(join(output_folder, "sizes.test.gitignore.cpp"), "w", encoding="utf-8") as f:
         f.write(sizes_test(telemetries))
@@ -709,6 +730,8 @@ def generate_cpp(telemetries: list[Telemetry], configurations: list[Configuratio
         f.write(telemtry_info_types(telemetries, 2))
     with open(join(output_folder, "configurations.gitignore.h"), "w", encoding="utf-8") as f:
         f.write(configuration_structs(configurations))
+        f.write("\n")
+        f.write(configurations_indexed_attributes(configurations))
         f.write("\n")
         f.write(event_infos_struct_offsets(configurations))
         f.write("\n")
