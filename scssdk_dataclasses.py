@@ -161,6 +161,18 @@ class EventAttribute:
     @property
     def event_info(self) -> EventInfo | None:
         return self._event_info
+
+    @property
+    def scs_type(self) -> str:
+        return SHORT_TYPENAME_TO_TYPE[self.type]
+
+    @property
+    def scs_type_id(self) -> int:
+        return id_of_type(self.type)
+
+    @property
+    def primitive_type(self) -> str:
+        return PRIMITIVE_TYPE_BY_ID[self.scs_type_id]
     
     def __hash__(self) -> int:
         return hash(f"{self.event_info.macro if self.event_info else None}.{self.macro}")
