@@ -155,7 +155,7 @@ class Telemetry:
         telemetries.insert(
             0,
             Telemetry(
-                Structure("master", [filter(lambda t: t.is_structure, telemetries)])
+                Structure("master", list(filter(lambda t: t.is_structure, telemetries)))
             ),
         )
 
