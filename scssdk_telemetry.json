@@ -1805,7 +1805,7 @@
                     "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_selector_count",
                     "expansion": "selector.count",
                     "type": "u32",
-                    "indexed": true
+                    "indexed": false
                 },
                 {
                     "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_slot_gear",
@@ -1931,7 +1931,7 @@
                     "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_differential_ratio",
                     "expansion": "differential.ratio",
                     "type": "float",
-                    "indexed": true
+                    "indexed": false
                 },
                 {
                     "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_retarder_step_count",
