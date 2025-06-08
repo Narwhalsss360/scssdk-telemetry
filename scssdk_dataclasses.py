@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field, asdict
+from __future__ import annotations
+from dataclasses import dataclass, asdict
 from os.path import isfile
 import json
 
@@ -142,6 +143,9 @@ class Channel:
             return self.expansion.replace("trailer", f"trailer.{trailer_index}", 1)
         raise IndexError(f"Trailer index max is {SCS_TELEMETRY_trailers_count}")
 
+    def __hash__(self) -> int:
+        return hash(self.macro)
+
 
 @dataclass
 class EventAttribute:
@@ -150,6 +154,16 @@ class EventAttribute:
     simple_name: str
     type: str
     indexed: bool
+
+    def __post_init__(self) -> None:
+        self._event_info: EventInfo | None = None
+
+    @property
+    def event_info(self) -> EventInfo | None:
+        return self._event_info
+    
+    def __hash__(self) -> int:
+        return hash(f"{self.event_info.macro if self.event_info else None}.{self.macro}")
 
 
 @dataclass
@@ -160,9 +174,20 @@ class EventInfo:
     attributes: list[EventAttribute]
 
     def __post_init__(self) -> None:
+        self._event: Event | None = None
         for i in range(len(self.attributes)):
             if isinstance(self.attributes[i], dict):
                 self.attributes[i] = EventAttribute(**self.attributes[i])
+
+        for attribute in self.attributes:
+            attribute._event_info = self
+
+    @property
+    def event(self) -> Event | None:
+        return self._event
+
+    def __hash__(self) -> int:
+        return hash(f"{self.event.macro if self.event else None}.{self.macro}")
 
 
 @dataclass
@@ -176,6 +201,8 @@ class Event:
         for i in range(len(self.event_infos)):
             if isinstance(self.event_infos[i], dict):
                 self.event_infos[i] = EventInfo(**self.event_infos[i])
+        for event_info in self.event_infos:
+            event_info._event = self
 
 
 SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
