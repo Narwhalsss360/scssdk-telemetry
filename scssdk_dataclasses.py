@@ -112,12 +112,10 @@ def id_of_type(type: str) -> int:
 
 
 @dataclass
-class Telemetry:
-    id: int
+class Channel:
     macro: str
     expansion: str
     type: str
-    is_event: bool
     indexed: bool
     simple_name: str
     is_trailer_channel: bool
@@ -184,7 +182,7 @@ SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
 
 
 def load() -> tuple[
-    list[Telemetry],
+    list[Channel],
     list[Event],
 ]:
     if not isfile(SCSSDK_TELEMETRY_FILE):
@@ -192,13 +190,13 @@ def load() -> tuple[
     with open(SCSSDK_TELEMETRY_FILE, encoding="utf-8") as file:
         scssdk: dict = json.loads(file.read())
     return (
-        [Telemetry(**telemetry) for telemetry in scssdk["telemetries"]],
+        [Channel(**channel) for channel in scssdk["channels"]],
         [Event(**event) for event in scssdk["events"]],
     )
 
 
 def scssdk_dict(
-    telemetries: list[Telemetry],
+    channels: list[Channel],
     events: list[Event],
 ) -> None:
     return {
@@ -210,7 +208,7 @@ def scssdk_dict(
         "PRIMITIVE_TYPE_BY_ID": PRIMITIVE_TYPE_BY_ID,
         "TYPE_SIZE_BY_ID": TYPE_SIZE_BY_ID,
         "PADDING_BY_TYPE": PADDING_BY_TYPE,
-        "telemetries": [asdict(dc) for dc in telemetries],
+        "channels": [asdict(dc) for dc in channels],
         "events": [asdict(dc) for dc in events],
     }
 
@@ -228,15 +226,15 @@ def yamlfy() -> None:
 
 
 def main() -> None:
-    telemetries, events = load()
-    print(f"Loaded {len(telemetries)} telemetries, and {len(events)} events.")
+    channels, events = load()
+    print(f"Loaded {len(channels)} channels, and {len(events)} events.")
     yamlfy()
 
     if REWRITE_JSON:
         with open(SCSSDK_TELEMETRY_FILE, "w", encoding="utf-8") as file:
             file.write(
                 json.dumps(
-                    scssdk_dict(telemetries, events),
+                    scssdk_dict(channels, events),
                     indent=4,
                 )
             )
