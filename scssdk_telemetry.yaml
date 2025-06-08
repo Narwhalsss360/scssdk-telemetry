@@ -1098,6 +1098,22 @@ telemetries:
   is_trailer_channel: false
   max_count: 14
 events:
+- macro: SCS_TELEMETRY_EVENT_frame_start
+  expansion: '1'
+  simple_name: frame_start
+  event_infos: []
+- macro: SCS_TELEMETRY_EVENT_frame_end
+  expansion: '2'
+  simple_name: frame_end
+  event_infos: []
+- macro: SCS_TELEMETRY_EVENT_paused
+  expansion: '3'
+  simple_name: paused
+  event_infos: []
+- macro: SCS_TELEMETRY_EVENT_started
+  expansion: '4'
+  simple_name: started
+  event_infos: []
 - macro: SCS_TELEMETRY_EVENT_configuration
   expansion: '5'
   simple_name: configuration
