@@ -548,10 +548,10 @@ def event_info_to_bytes_function(event_info: Configuration | GameplayEvent) -> s
                 )
             else:
                 out += (
-                    "\toffset = out.size();\n"
                     f"\tout.resize(offset + info.{identifier}.size() + 1);\n"
                     f"\tstd::copy(info.{identifier}.begin(), info.{identifier}.end(), out.begin() + offset);\n"
                     f"\tout[offset + info.{identifier}.size()] = 0;\n"
+                    f"\toffset += info.{identifier}.size() + 1;\n"
                 )
         elif attribute.indexed:
             out += (
@@ -597,10 +597,8 @@ def event_info_from_bytes_function(event_info: Configuration | GameplayEvent) ->
                 size_initialized = True
             else:
                 out += (
-                    f"\tout.{identifier}.clear();\n"
-                    "\tfor (; bytes[offset] != 0; offset++) {\n"
-                    f"\t\tout.{identifier} += static_cast<char>(bytes[offset]);\n"
-                    "\t}\n"
+                    f"\tout.{identifier} = std::string(reinterpret_cast<const char*>(bytes.data() + offset));\n"
+                    f"\toffset += out.{identifier}.size() + 1;\n"
                 )
         elif attribute.indexed:
             out += (
