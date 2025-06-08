@@ -146,7 +146,7 @@ class Telemetry:
 
 
 @dataclass
-class TelemetryEventAttribute:
+class EventAttribute:
     macro: str
     expansion: str
     simple_name: str
@@ -159,12 +159,12 @@ class Configuration:
     macro: str
     expansion: str
     simple_name: str
-    attributes: list[TelemetryEventAttribute]
+    attributes: list[EventAttribute]
 
     def __post_init__(self) -> None:
         for i in range(len(self.attributes)):
             if isinstance(self.attributes[i], dict):
-                self.attributes[i] = TelemetryEventAttribute(**self.attributes[i])
+                self.attributes[i] = EventAttribute(**self.attributes[i])
 
 
 @dataclass
@@ -172,12 +172,12 @@ class GameplayEvent:
     macro: str
     expansion: str
     simple_name: str
-    attributes: list[TelemetryEventAttribute]
+    attributes: list[EventAttribute]
 
     def __post_init__(self) -> None:
         for i in range(len(self.attributes)):
             if isinstance(self.attributes[i], dict):
-                self.attributes[i] = TelemetryEventAttribute(**self.attributes[i])
+                self.attributes[i] = EventAttribute(**self.attributes[i])
 
 
 SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
@@ -185,7 +185,7 @@ SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
 
 def load() -> tuple[
     list[Telemetry],
-    list[TelemetryEventAttribute],
+    list[EventAttribute],
     list[Configuration],
     list[GameplayEvent],
 ]:
@@ -195,7 +195,7 @@ def load() -> tuple[
         scssdk: dict = json.loads(file.read())
     return (
         [Telemetry(**telemetry) for telemetry in scssdk["telemetries"]],
-        [TelemetryEventAttribute(**attribute) for attribute in scssdk["attributes"]],
+        [EventAttribute(**attribute) for attribute in scssdk["attributes"]],
         [Configuration(**configuration) for configuration in scssdk["configurations"]],
         [
             GameplayEvent(**gameplay_event)
@@ -206,7 +206,7 @@ def load() -> tuple[
 
 def scssdk_dict(
     telemetries: list[Telemetry],
-    attributes: list[TelemetryEventAttribute],
+    attributes: list[EventAttribute],
     configurations: list[Configuration],
     gameplay_events: list[GameplayEvent],
 ) -> None:
