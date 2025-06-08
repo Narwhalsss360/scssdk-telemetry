@@ -30,10 +30,10 @@ def attribute_storage(attribute: EventAttribute) -> str:
 
 
 def storage(telemetry_or_attr: Telemetry | EventAttribute) -> tuple[str, int]:
-    if telemetry_or_attr.is_channel:
-        return channel_storage(telemetry_or_attr.as_channel)
-    elif isinstance(telemetry_or_attr, EventAttribute):
+    if isinstance(telemetry_or_attr, EventAttribute):
         return attribute_storage(telemetry_or_attr), None
+    elif telemetry_or_attr.is_channel:
+        return channel_storage(telemetry_or_attr.as_channel)
 
     assert False, "Can only get storage of a channel or event attribute"
 
