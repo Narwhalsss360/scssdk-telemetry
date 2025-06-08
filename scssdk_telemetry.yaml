@@ -1406,7 +1406,7 @@ configurations:
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_selector_count
     expansion: selector.count
     type: u32
-    indexed: true
+    indexed: false
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_slot_gear
     expansion: slot.gear
     type: s32
@@ -1489,7 +1489,7 @@ configurations:
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_differential_ratio
     expansion: differential.ratio
     type: float
-    indexed: true
+    indexed: false
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_retarder_step_count
     expansion: retarder.steps
     type: u32
@@ -1569,8 +1569,8 @@ configurations:
     expansion: hook.position
     type: fvector
     indexed: false
-  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_id
-    expansion: id
+  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand_id
+    expansion: brand_id
     type: string
     indexed: false
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand
@@ -1647,6 +1647,14 @@ configurations:
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city_id
     expansion: destination.city.id
     type: string
+    indexed: false
+  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_unit_mass
+    expansion: cargo.unit.mass
+    type: float
+    indexed: false
+  - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_unit_count
+    expansion: cargo.unit.count
+    type: u32
     indexed: false
   - macro: SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city
     expansion: destination.city

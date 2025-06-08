@@ -2174,6 +2174,19 @@
                     "indexed": false
                 },
                 {
+                    "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_unit_mass",
+                    "expansion": "cargo.unit.mass",
+                    "type": "float",
+                    "indexed": false
+                },
+                {
+
+                    "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_unit_count",
+                    "expansion": "cargo.unit.count",
+                    "type": "u32",
+                    "indexed": false
+                },
+                {
                     "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city",
                     "expansion": "destination.city",
                     "type": "string",
