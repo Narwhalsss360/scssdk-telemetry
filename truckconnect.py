@@ -61,6 +61,20 @@ class Structure:
     data: Event | str
     children: list[Telemetry]
 
+    @property
+    def is_event(self) -> bool:
+        return isinstance(self.data, Event)
+
+    @property
+    def is_str(self) -> bool:
+        return isinstance(self.data, str)
+
+    @property
+    def name(self) -> str:
+        if self.is_event:
+            return self.data.simple_name
+        return self.data
+
 
 @dataclass
 class Telemetry:
