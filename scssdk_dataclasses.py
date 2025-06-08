@@ -11,7 +11,7 @@ except ImportError:
     HAS_YAML = False
 
 
-REWRITE_JSON = False
+REWRITE_JSON = True
 
 
 SCS_TELEMETRY_trailers_count: int = 10
@@ -155,20 +155,7 @@ class EventAttribute:
 
 
 @dataclass
-class Configuration:
-    macro: str
-    expansion: str
-    simple_name: str
-    attributes: list[EventAttribute]
-
-    def __post_init__(self) -> None:
-        for i in range(len(self.attributes)):
-            if isinstance(self.attributes[i], dict):
-                self.attributes[i] = EventAttribute(**self.attributes[i])
-
-
-@dataclass
-class GameplayEvent:
+class EventInfo:
     macro: str
     expansion: str
     simple_name: str
@@ -185,8 +172,7 @@ SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
 
 def load() -> tuple[
     list[Telemetry],
-    list[Configuration],
-    list[GameplayEvent],
+    dict,
 ]:
     if not isfile(SCSSDK_TELEMETRY_FILE):
         raise FileNotFoundError(f"File {SCSSDK_TELEMETRY_FILE} doesn't exist")
@@ -194,18 +180,16 @@ def load() -> tuple[
         scssdk: dict = json.loads(file.read())
     return (
         [Telemetry(**telemetry) for telemetry in scssdk["telemetries"]],
-        [Configuration(**configuration) for configuration in scssdk["configurations"]],
-        [
-            GameplayEvent(**gameplay_event)
-            for gameplay_event in scssdk["gameplay_events"]
-        ],
+        {
+            key: [EventInfo(**event_info) for event_info in event_infos]
+            for key, event_infos in scssdk["event_info"].items()
+        },
     )
 
 
 def scssdk_dict(
     telemetries: list[Telemetry],
-    configurations: list[Configuration],
-    gameplay_events: list[GameplayEvent],
+    event_info: dict,
 ) -> None:
     return {
         "SCS_TELEMETRY_trailers_count": SCS_TELEMETRY_trailers_count,
@@ -217,8 +201,10 @@ def scssdk_dict(
         "TYPE_SIZE_BY_ID": TYPE_SIZE_BY_ID,
         "PADDING_BY_TYPE": PADDING_BY_TYPE,
         "telemetries": [asdict(dc) for dc in telemetries],
-        "configurations": [asdict(dc) for dc in configurations],
-        "gameplay_events": [asdict(dc) for dc in gameplay_events],
+        "event_info": {
+            event: [asdict(event_info) for event_info in event_infos]
+            for event, event_infos in event_info.items()
+        },
     }
 
 
@@ -235,19 +221,15 @@ def yamlfy() -> None:
 
 
 def main() -> None:
-    telemetries, configurations, gameplay_events = load()
-    print(
-        f"Loaded {len(telemetries)} telemetries, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
-    )
+    telemetries, event_info = load()
+    print(f"Loaded {len(telemetries)} telemetries, and {len(event_info)} event infos.")
     yamlfy()
 
     if REWRITE_JSON:
         with open(SCSSDK_TELEMETRY_FILE, "w", encoding="utf-8") as file:
             file.write(
                 json.dumps(
-                    scssdk_dict(
-                        telemetries, configurations, gameplay_events
-                    ),
+                    scssdk_dict(telemetries, event_info),
                     indent=4,
                 )
             )
