@@ -11,6 +11,9 @@ except ImportError:
     HAS_YAML = False
 
 
+REWRITE_JSON = False
+
+
 SCS_TELEMETRY_trailers_count: int = 10
 
 TYPE_MACROS_BY_ID: list[str] = [
@@ -198,6 +201,28 @@ def load() -> tuple[
     )
 
 
+def scssdk_dict(
+    telemetries: list[Telemetry],
+    attributes: list[TelemetryEventAttribute],
+    configurations: list[Configuration],
+    gameplay_events: list[GameplayEvent],
+) -> None:
+    return {
+        "SCS_TELEMETRY_trailers_count": SCS_TELEMETRY_trailers_count,
+        "TYPE_MACROS_BY_ID": TYPE_MACROS_BY_ID,
+        "CPP_INVALID_TYPE": CPP_INVALID_TYPE,
+        "TYPES_BY_ID": TYPES_BY_ID,
+        "SHORT_TYPENAME_TO_TYPE": SHORT_TYPENAME_TO_TYPE,
+        "PRIMITIVE_TYPE_BY_ID": PRIMITIVE_TYPE_BY_ID,
+        "TYPE_SIZE_BY_ID": TYPE_SIZE_BY_ID,
+        "PADDING_BY_TYPE": PADDING_BY_TYPE,
+        "telemetries": telemetries,
+        "attributes": attributes,
+        "configurations": configurations,
+        "gameplay_events": gameplay_events,
+    }
+
+
 def yamlfy() -> None:
     if not HAS_YAML:
         return
@@ -216,6 +241,17 @@ def main() -> None:
         f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
     )
     yamlfy()
+
+    if REWRITE_JSON:
+        with open(SCSSDK_TELEMETRY_FILE, "w", encoding="utf-8") as file:
+            file.write(
+                json.dumps(
+                    scssdk_dict(
+                        telemetries, attributes, configurations, gameplay_events
+                    ),
+                    indent=4,
+                )
+            )
 
 
 if __name__ == "__main__":
