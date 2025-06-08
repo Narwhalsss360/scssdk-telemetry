@@ -68,6 +68,23 @@ SHORT_TYPENAME_TO_TYPE: dict[str, str] = {
 }
 
 
+PRIMITIVE_TYPE_BY_ID: list[str] = [
+    CPP_INVALID_TYPE,
+    "bool",
+    "int32_t",
+    "uint32_t",
+    "uint64_t",
+    "float",
+    "double",
+    "scs_value_fvector_t",
+    "scs_value_dvector_t",
+    "scs_value_euler_t",
+    "scs_value_fplacement_t",
+    "scs_value_dplacement_t",
+    "scs_value_string_t",
+    "int64_t",
+]
+
 TYPE_SIZE_BY_ID: list[int] = [0, 1, 4, 4, 8, 4, 8, 12, 24, 12, 24, 40, 0, 8]
 
 PADDING_BY_TYPE: dict[str, dict[str, int]] = (
@@ -85,7 +102,10 @@ def id_of_type(type: str) -> int:
             try:
                 return TYPES_BY_ID.index(SHORT_TYPENAME_TO_TYPE.get(type))
             except ValueError:
-                return -1
+                try:
+                    return PRIMITIVE_TYPE_BY_ID.index(type)
+                except ValueError:
+                    return -1
 
 
 @dataclass
@@ -107,6 +127,10 @@ class Telemetry:
     @property
     def scs_type_id(self) -> int:
         return id_of_type(self.type)
+
+    @property
+    def primitive_type(self) -> str:
+        return PRIMITIVE_TYPE_BY_ID[self.scs_type_id]
 
     def trailer_index_expansion(self, trailer_index: int = -1) -> str:
         if trailer_index != -1 and not self.is_trailer_channel:
