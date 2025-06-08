@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field, asdict
 from os.path import isfile
 import json
 
@@ -149,6 +149,7 @@ class Telemetry:
 class TelemetryEventAttribute:
     macro: str
     expansion: str
+    simple_name: str
     type: str
     indexed: bool
 
@@ -157,6 +158,7 @@ class TelemetryEventAttribute:
 class Configuration:
     macro: str
     expansion: str
+    simple_name: str
     attributes: list[TelemetryEventAttribute]
 
     def __post_init__(self) -> None:
@@ -169,6 +171,7 @@ class Configuration:
 class GameplayEvent:
     macro: str
     expansion: str
+    simple_name: str
     attributes: list[TelemetryEventAttribute]
 
     def __post_init__(self) -> None:
@@ -216,10 +219,10 @@ def scssdk_dict(
         "PRIMITIVE_TYPE_BY_ID": PRIMITIVE_TYPE_BY_ID,
         "TYPE_SIZE_BY_ID": TYPE_SIZE_BY_ID,
         "PADDING_BY_TYPE": PADDING_BY_TYPE,
-        "telemetries": telemetries,
-        "attributes": attributes,
-        "configurations": configurations,
-        "gameplay_events": gameplay_events,
+        "telemetries": [asdict(dc) for dc in telemetries],
+        "attributes": [asdict(dc) for dc in attributes],
+        "configurations": [asdict(dc) for dc in configurations],
+        "gameplay_events": [asdict(dc) for dc in gameplay_events],
     }
 
 
