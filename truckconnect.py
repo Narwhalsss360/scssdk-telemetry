@@ -1,8 +1,11 @@
 from __future__ import annotations
 from enum import Enum
+from pathlib import Path
 from dataclasses import dataclass, field
 from scssdk_dataclasses import Channel, Event, EventInfo, EventAttribute, load, TYPE_SIZE_BY_ID
 
+OUTPUT_FOLDER: Path = Path("generated.gitignore/")
+TAB_CHARS: str = '\t'
 
 TELEMETRY_EVENTS: str = [
     "SCS_TELEMETRY_EVENT_configuration",
@@ -15,14 +18,28 @@ VALUE_STORAGE_EXTRA_SIZE: int = 1
 VALUE_ARRAY_STORAGE_TYPE_NAME: str = "value_array_storage"
 VALUE_ARRAY_STORAGE_EXTRA_SIZE: int = 1 + 4
 VALUE_VECTOR_STORAGE_TYPE_NAME: str = "value_vector_storage"
-VALUE_VECTOR_STORAGE_EXTRA_SIZE: int = 1
+
+def use_std_string(cpp_type: str) -> str:
+    if cpp_type == "scs_value_string_t":
+        return "std::string"
+    return cpp_type
+
 
 def scs_type_id_storage_size(scs_type_id: int) -> int:
     return TYPE_SIZE_BY_ID[scs_type_id] + VALUE_STORAGE_EXTRA_SIZE
 
 
 def channel_storage(channel: Channel) -> tuple[str, int]:
-    return f"{VALUE_ARRAY_STORAGE_TYPE_NAME if channel.indexed else VALUE_STORAGE_TYPE_NAME}<{channel.primitive_type}>", scs_type_id_storage_size(channel.scs_type_id) * channel.max_count
+    cpp_type: str
+    template_args: str
+    if channel.indexed:
+        cpp_type = VALUE_ARRAY_STORAGE_TYPE_NAME
+        template_args = f"{use_std_string(channel.primitive_type)}, {channel.max_count}"
+    else:
+        cpp_type = VALUE_STORAGE_TYPE_NAME
+        template_args = use_std_string(channel.primitive_type)
+
+    return f"{cpp_type}<{template_args}>", scs_type_id_storage_size(channel.scs_type_id) * channel.max_count
 
 
 def attribute_storage(attribute: EventAttribute) -> str:
@@ -186,9 +203,48 @@ class Telemetry:
         return channel_telemetries
 
 
+def master_structure(master: Telemetry) -> str:
+    def recurse(tabcount: str, telemetry: Telemetry | EventAttribute):
+        tabstr: str = TAB_CHARS * tabcount
+        if isinstance(telemetry, EventAttribute):
+            out = f"{tabstr}{storage(telemetry)[0]} {telemetry.simple_name};\n"
+        elif telemetry.is_structure:
+            out = f"{tabstr}struct {telemetry.as_structure.name}_storage {{"
+            if telemetry.as_structure.children:
+                out += "\n"
+
+            for child in telemetry.as_structure.children:
+                out += recurse(tabcount + 1, child)
+
+            out += f"{tabstr}}}"
+            if telemetry.as_structure.name != "master":
+                out += f" {telemetry.as_structure.name}"
+            out += ";\n"
+        elif telemetry.is_event_info:
+            out = f"{tabstr}struct {telemetry.as_event_info.simple_name}_storage {{"
+            if telemetry.as_event_info.attributes:
+                out += "\n"
+
+            for child in telemetry.as_event_info.attributes:
+                out += recurse(tabcount + 1, child)
+
+            out += f"{tabstr}}} {telemetry.as_event_info.simple_name};\n"
+        else:
+            out = f"{tabstr}{storage(telemetry)[0]} {telemetry.as_channel.simple_name};\n"
+
+        return out
+
+    return recurse(0, master)
+
+
 def main() -> None:
     telemetries: list[Telemetry] = Telemetry.build(*load())
     print(f"Loaded {len(telemetries)} telemetries.")
+
+    if not OUTPUT_FOLDER.exists():
+        OUTPUT_FOLDER.mkdir()
+    with open(OUTPUT_FOLDER.joinpath("master_structure.h"), "w", encoding="utf-8") as f:
+        f.write(master_structure(telemetries[0]))
 
 
 if __name__ == "__main__":
