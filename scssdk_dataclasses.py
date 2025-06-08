@@ -11,7 +11,7 @@ except ImportError:
     HAS_YAML = False
 
 
-REWRITE_JSON = True
+REWRITE_JSON = False
 
 
 SCS_TELEMETRY_trailers_count: int = 10
@@ -167,12 +167,25 @@ class EventInfo:
                 self.attributes[i] = EventAttribute(**self.attributes[i])
 
 
+@dataclass
+class Event:
+    macro: str
+    expansion: str
+    simple_name: str
+    event_infos: list[EventInfo]
+
+    def __post_init__(self) -> None:
+        for i in range(len(self.event_infos)):
+            if isinstance(self.event_infos[i], dict):
+                self.event_infos[i] = EventInfo(**self.event_infos[i])
+
+
 SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
 
 
 def load() -> tuple[
     list[Telemetry],
-    dict,
+    list[Event],
 ]:
     if not isfile(SCSSDK_TELEMETRY_FILE):
         raise FileNotFoundError(f"File {SCSSDK_TELEMETRY_FILE} doesn't exist")
@@ -180,16 +193,13 @@ def load() -> tuple[
         scssdk: dict = json.loads(file.read())
     return (
         [Telemetry(**telemetry) for telemetry in scssdk["telemetries"]],
-        {
-            key: [EventInfo(**event_info) for event_info in event_infos]
-            for key, event_infos in scssdk["event_info"].items()
-        },
+        [Event(**event) for event in scssdk["events"]],
     )
 
 
 def scssdk_dict(
     telemetries: list[Telemetry],
-    event_info: dict,
+    events: list[Event],
 ) -> None:
     return {
         "SCS_TELEMETRY_trailers_count": SCS_TELEMETRY_trailers_count,
@@ -201,10 +211,7 @@ def scssdk_dict(
         "TYPE_SIZE_BY_ID": TYPE_SIZE_BY_ID,
         "PADDING_BY_TYPE": PADDING_BY_TYPE,
         "telemetries": [asdict(dc) for dc in telemetries],
-        "event_info": {
-            event: [asdict(event_info) for event_info in event_infos]
-            for event, event_infos in event_info.items()
-        },
+        "events": [asdict(dc) for dc in events],
     }
 
 
@@ -221,15 +228,15 @@ def yamlfy() -> None:
 
 
 def main() -> None:
-    telemetries, event_info = load()
-    print(f"Loaded {len(telemetries)} telemetries, and {len(event_info)} event infos.")
+    telemetries, events = load()
+    print(f"Loaded {len(telemetries)} telemetries, and {len(events)} events.")
     yamlfy()
 
     if REWRITE_JSON:
         with open(SCSSDK_TELEMETRY_FILE, "w", encoding="utf-8") as file:
             file.write(
                 json.dumps(
-                    scssdk_dict(telemetries, event_info),
+                    scssdk_dict(telemetries, events),
                     indent=4,
                 )
             )

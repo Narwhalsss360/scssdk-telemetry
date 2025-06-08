@@ -1097,8 +1097,11 @@ telemetries:
   simple_name: truck_channel_wheel_lift_offset
   is_trailer_channel: false
   max_count: 14
-event_info:
-  configuration:
+events:
+- macro: SCS_TELEMETRY_EVENT_configuration
+  expansion: '5'
+  simple_name: configuration
+  event_infos:
   - macro: SCS_TELEMETRY_trailers_count
     expansion: '10'
     simple_name: trailers_count
@@ -1507,7 +1510,10 @@ event_info:
       simple_name: planned_distance_km
       type: u32
       indexed: false
-  gameplay:
+- macro: SCS_TELEMETRY_EVENT_gameplay
+  expansion: '6'
+  simple_name: gameplay
+  event_infos:
   - macro: SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled
     expansion: job.cancelled
     simple_name: job_cancelled
