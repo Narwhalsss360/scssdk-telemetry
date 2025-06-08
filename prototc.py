@@ -4,6 +4,7 @@ from scssdk_dataclasses import (
     Telemetry,
     Configuration,
     TelemetryEventAttribute,
+    GameplayEvent,
     TYPE_MACROS_BY_ID,
     SCS_TELEMETRY_trailers_count,
     load,
@@ -513,23 +514,23 @@ def register_all_function(telemetries: list[Telemetry]) -> str:
     return out
 
 
-def event_info_simple_name(configuration: Configuration) -> str:
-    return configuration.macro.replace("SCS_TELEMETRY_CONFIG_", "")
+def event_info_simple_name(event_info: Configuration | GameplayEvent) -> str:
+    return event_info.macro.replace("SCS_TELEMETRY_GAMEPLAY_EVENT_" if isinstance(event_info, GameplayEvent) else "SCS_TELEMETRY_CONFIG_", "")
 
 
 def attribute_simple_name(attribute: TelemetryEventAttribute) -> str:
-    return attribute.macro.replace("SCS_TELEMETRY_CONFIG_ATTRIBUTE_", "")
+    return attribute.macro.replace("SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_" if "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_" in attribute.macro else "SCS_TELEMETRY_CONFIG_ATTRIBUTE_", "")
 
 
-def event_info_to_bytes_function(configuration: Configuration) -> str:
-    out: str = f"void to_bytes(const {event_info_simple_name(configuration)}& info, std::vector<uint8_t>& out) {{\n"
+def event_info_to_bytes_function(event_info: Configuration | GameplayEvent) -> str:
+    out: str = f"void to_bytes(const {event_info_simple_name(event_info)}& info, std::vector<uint8_t>& out) {{\n"
 
 
     out += "\tout.resize(1);\n"
     out += "\t*out.data() = info.information;\n"
     out += "\tsize_t offset = 1;\n\n"
 
-    for i, attribute in enumerate(configuration.attributes):
+    for i, attribute in enumerate(event_info.attributes):
         type_name: str = SHORT_TYPENAME_TO_TYPE[attribute.type]
         identifier: str = attribute_simple_name(attribute)
         if attribute.type == "string":
@@ -565,21 +566,21 @@ def event_info_to_bytes_function(configuration: Configuration) -> str:
                 f"\t*reinterpret_cast<{type_name}*>(out.data() + offset) = info.{identifier};\n"
                 f"\toffset += sizeof({type_name});\n"
             )
-        if i != len(configuration.attributes) - 1:
+        if i != len(event_info.attributes) - 1:
             out += "\n"
 
     out += "}\n"
     return out
 
 
-def event_info_from_bytes_function(configuration: Configuration) -> str:
-    out: str = f"void from_bytes(const std::vector<uint8_t>& bytes, {event_info_simple_name(configuration)}& out) {{\n"
+def event_info_from_bytes_function(event_info: Configuration | GameplayEvent) -> str:
+    out: str = f"void from_bytes(const std::vector<uint8_t>& bytes, {event_info_simple_name(event_info)}& out) {{\n"
 
     out += "\tout.information = bytes[0];\n"
     out += "\tsize_t offset = 1;\n\n"
     size_initialized: bool = False
 
-    for i, attribute in enumerate(configuration.attributes):
+    for i, attribute in enumerate(event_info.attributes):
         type_name: str = SHORT_TYPENAME_TO_TYPE[attribute.type]
         identifier: str = attribute_simple_name(attribute)
         if attribute.type == "string":
@@ -617,16 +618,16 @@ def event_info_from_bytes_function(configuration: Configuration) -> str:
                 f"\tout.{identifier} = *reinterpret_cast<const {type_name}*>(bytes.data() + offset);\n"
                 f"\toffset += sizeof({type_name});\n"
             )
-        if i != len(configuration.attributes) - 1:
+        if i != len(event_info.attributes) - 1:
             out += "\n"
 
     out += "}\n"
     return out
 
 
-def configuration_structs(configurations: list[Configuration]) -> str:
+def event_info_structs(event_infos: list[Configuration | GameplayEvent]) -> str:
     out: str = ""
-    for configuration in configurations:
+    for configuration in event_infos:
         if not configuration.attributes:
             continue
 
@@ -643,30 +644,30 @@ def configuration_structs(configurations: list[Configuration]) -> str:
     return out
 
 
-def to_bytes_functions(configurations: list[Configuration]) -> str:
+def to_bytes_functions(event_infos: list[Configuration | GameplayEvent]) -> str:
     out: str = ""
-    for configuration in configurations:
+    for configuration in event_infos:
         if not configuration.attributes:
             continue
         out += f"{event_info_to_bytes_function(configuration)}\n"
     return out
 
 
-def from_bytes_functions(configurations: list[Configuration]) -> str:
+def from_bytes_functions(event_infos: list[Configuration | GameplayEvent]) -> str:
     out: str = ""
-    for configuration in configurations:
+    for configuration in event_infos:
         if not configuration.attributes:
             continue
         out += f"{event_info_from_bytes_function(configuration)}\n"
     return out
 
 
-def event_info_struct_offsets_expr(configuration: Configuration) -> str:
+def event_info_struct_offsets_expr(event_info: Configuration | GameplayEvent) -> str:
     out: str = "{\n"
 
-    for i, attribute in enumerate(configuration.attributes):
-        out += f"\t{{ \"{attribute.expansion}\", offsetof({event_info_simple_name(configuration)}, {attribute_simple_name(attribute)}) }}"
-        if i != len(configuration.attributes) - 1:
+    for i, attribute in enumerate(event_info.attributes):
+        out += f"\t{{ \"{attribute.expansion}\", offsetof({event_info_simple_name(event_info)}, {attribute_simple_name(attribute)}) }}"
+        if i != len(event_info.attributes) - 1:
             out += ","
         out += "\n"
 
@@ -674,18 +675,18 @@ def event_info_struct_offsets_expr(configuration: Configuration) -> str:
     return out
 
 
-def event_infos_struct_offsets(configurations: list[Configuration]) -> str:
+def event_infos_struct_offsets(event_infos: list[Configuration | GameplayEvent]) -> str:
     out: str = ""
-    for configuration in configurations:
+    for configuration in event_infos:
         if not configuration.attributes:
             continue
         out += f"const std::unordered_map<std::string, size_t> {event_info_simple_name(configuration)}_offsets ={event_info_struct_offsets_expr(configuration)};\n\n"
     return out
 
 
-def configuraion_indexed_attributes(configuration: Configuration) -> str:
-    out: str = f"const std::set<std::string> {event_info_simple_name(configuration)}_indexed ={{\n"
-    indexed: list[TelemetryEventAttribute] = list(filter(lambda a: a.indexed, configuration.attributes))
+def configuraion_indexed_attributes(event_info: Configuration | GameplayEvent) -> str:
+    out: str = f"const std::set<std::string> {event_info_simple_name(event_info)}_indexed ={{\n"
+    indexed: list[TelemetryEventAttribute] = list(filter(lambda a: a.indexed, event_info.attributes))
     for i, attribute in enumerate(indexed):
         out += f"\t\"{attribute.expansion}\""
         if i != len(indexed) - 1:
@@ -695,16 +696,16 @@ def configuraion_indexed_attributes(configuration: Configuration) -> str:
     return out
 
 
-def configurations_indexed_attributes(configurations: list[Configuration]) -> str:
+def event_info_indexed_attributes(event_infos: list[Configuration | GameplayEvent]) -> str:
     out: str = ""
-    for configuration in configurations:
+    for configuration in event_infos:
         if not configuration.attributes:
             continue
         out += f"{configuraion_indexed_attributes(configuration)}\n"
     return out
 
 
-def generate_cpp(telemetries: list[Telemetry], configurations: list[Configuration], output_folder: str = '.') -> None:
+def generate_cpp(telemetries: list[Telemetry], configurations: list[Configuration], gameplay_events: list[GameplayEvent], output_folder: str = '.') -> None:
     with open(join(output_folder, "sizes.test.gitignore.cpp"), "w", encoding="utf-8") as f:
         f.write(sizes_test(telemetries))
     with open(join(output_folder, "offset.test.gitignore.cpp"), "w", encoding="utf-8") as f:
@@ -729,16 +730,25 @@ def generate_cpp(telemetries: list[Telemetry], configurations: list[Configuratio
     with open(join(output_folder, "telemetry_info_types.gitignore.h"), "w", encoding="utf-8") as f:
         f.write(telemtry_info_types(telemetries, 2))
     with open(join(output_folder, "configurations.gitignore.h"), "w", encoding="utf-8") as f:
-        f.write(configuration_structs(configurations))
+        f.write(event_info_structs(configurations))
         f.write("\n")
-        f.write(configurations_indexed_attributes(configurations))
+        f.write(event_info_indexed_attributes(configurations))
         f.write("\n")
         f.write(event_infos_struct_offsets(configurations))
         f.write("\n")
         f.write(to_bytes_functions(configurations))
         f.write("\n")
         f.write(from_bytes_functions(configurations))
-
+    with open(join(output_folder, "gameplays.gitignore.h"), "w", encoding="utf-8") as f:
+        f.write(event_info_structs(gameplay_events))
+        f.write("\n")
+        f.write(event_info_indexed_attributes(gameplay_events))
+        f.write("\n")
+        f.write(event_infos_struct_offsets(gameplay_events))
+        f.write("\n")
+        f.write(to_bytes_functions(gameplay_events))
+        f.write("\n")
+        f.write(from_bytes_functions(gameplay_events))
 
 def main() -> None:
     telemetries, attributes, configurations, gameplay_events = load()
@@ -750,7 +760,7 @@ def main() -> None:
     print(
         f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
     )
-    generate_cpp(telemetries, configurations)
+    generate_cpp(telemetries, configurations, gameplay_events)
 
 
 if __name__ == "__main__":
