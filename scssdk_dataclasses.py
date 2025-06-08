@@ -185,7 +185,6 @@ SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
 
 def load() -> tuple[
     list[Telemetry],
-    list[EventAttribute],
     list[Configuration],
     list[GameplayEvent],
 ]:
@@ -195,7 +194,6 @@ def load() -> tuple[
         scssdk: dict = json.loads(file.read())
     return (
         [Telemetry(**telemetry) for telemetry in scssdk["telemetries"]],
-        [EventAttribute(**attribute) for attribute in scssdk["attributes"]],
         [Configuration(**configuration) for configuration in scssdk["configurations"]],
         [
             GameplayEvent(**gameplay_event)
@@ -206,7 +204,6 @@ def load() -> tuple[
 
 def scssdk_dict(
     telemetries: list[Telemetry],
-    attributes: list[EventAttribute],
     configurations: list[Configuration],
     gameplay_events: list[GameplayEvent],
 ) -> None:
@@ -220,7 +217,6 @@ def scssdk_dict(
         "TYPE_SIZE_BY_ID": TYPE_SIZE_BY_ID,
         "PADDING_BY_TYPE": PADDING_BY_TYPE,
         "telemetries": [asdict(dc) for dc in telemetries],
-        "attributes": [asdict(dc) for dc in attributes],
         "configurations": [asdict(dc) for dc in configurations],
         "gameplay_events": [asdict(dc) for dc in gameplay_events],
     }
@@ -239,9 +235,9 @@ def yamlfy() -> None:
 
 
 def main() -> None:
-    telemetries, attributes, configurations, gameplay_events = load()
+    telemetries, configurations, gameplay_events = load()
     print(
-        f"Loaded {len(telemetries)} telemetries, {len(attributes)} attributes, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
+        f"Loaded {len(telemetries)} telemetries, {len(configurations)} configurations and {len(gameplay_events)} gameplay events."
     )
     yamlfy()
 
@@ -250,7 +246,7 @@ def main() -> None:
             file.write(
                 json.dumps(
                     scssdk_dict(
-                        telemetries, attributes, configurations, gameplay_events
+                        telemetries, configurations, gameplay_events
                     ),
                     indent=4,
                 )
