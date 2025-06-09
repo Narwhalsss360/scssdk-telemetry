@@ -545,6 +545,7 @@ def main() -> None:
     with open(OUTPUT_FOLDER.joinpath("telemetry_metadata_functions.h"), "w", encoding="utf-8") as f:
         f.write(f"{telemetry_type_of_function(telemetries)}\n")
         f.write(f"{master_offset_of_function(telemetries)}\n")
+        f.write(f"{structure_offset_of_function(telemetries)}\n")
 
 
 if __name__ == "__main__":
