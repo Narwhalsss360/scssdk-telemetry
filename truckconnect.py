@@ -2,7 +2,7 @@ from __future__ import annotations
 from enum import Enum
 from pathlib import Path
 from dataclasses import dataclass, field
-from scssdk_dataclasses import Channel, Event, EventInfo, EventAttribute, load, TYPE_SIZE_BY_ID
+from scssdk_dataclasses import Channel, Event, EventInfo, EventAttribute, load, TYPE_SIZE_BY_ID, TYPE_MACROS_BY_ID
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
 TAB_CHARS: str = '\t'
@@ -98,6 +98,14 @@ def name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
     if is_attribute(telemetry_or_attr):
         return telemetry_or_attr.simple_name
     return telemetry_or_attr.name
+
+
+def cpp_bool(boolean: bool) -> str:
+    return "true" if boolean else "false"
+
+
+def offsetof(type_name: str, member: str) -> str:
+    return f"offsetof({type_name}, {member})"
 
 
 class ChannelCategory(Enum):
@@ -385,6 +393,61 @@ def telemetries_ids_enum(telemetries: list[Telemetry], tabcount: int = 0) -> str
     return out
 
 
+def telemetry_metadata_structs(telemetries: list[Telemetry], namespace: str = "metadata", tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = f"{tabstr}namespace {namespace} {{\n"
+    tabstr = TAB_CHARS * (tabcount + 1)
+
+    out += f"{TelemetryType.cpp(tabcount + 1)}\n"
+
+    for i, telemetry in enumerate(telemetries):
+        out += (
+            f"{tabstr}struct {telemetry.name} {{\n"
+            f"{tabstr}{TAB_CHARS}static constexpr const {TELEMETRY_ID_ENUM_TYPE_NAME} id = {telemetry.qualified_id};\n"
+            f"{tabstr}{TAB_CHARS}static constexpr const telemetry_type telemetry_type = {telemetry.telemetry_type.cpp_value()};\n"
+        )
+
+        if telemetry != telemetries[0]:
+            parents: list[Telemetry] = telemetry.parents[:-1][::-1]
+            dot_notation: str = ""
+            for parent in parents:
+                dot_notation += f"{name(parent)}."
+            dot_notation += name(telemetry)
+            out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = {offsetof(type_name(telemetries[0]), dot_notation)};\n"
+
+        if telemetry.is_structure:
+            out += (
+                f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == telemetries[0] else telemetry.parents[::-1])], type_name(telemetry))};\n"
+            )
+        elif telemetry.is_event_info:
+            out += (
+                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = \"{telemetry.as_event_info.macro}\";\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro = \"{telemetry.as_event_info.expansion}\";\n"
+            )
+            if telemetry != telemetries[0]: 
+                out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
+        elif telemetry.is_channel:
+            out += (
+                f"{tabstr}{TAB_CHARS}using storage_type = {type_name(telemetry)};\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = \"{telemetry.as_channel.macro}\";\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro = \"{telemetry.as_channel.expansion}\";\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const bool indexed = {cpp_bool(telemetry.as_channel.indexed)};\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const size_t max_count = {telemetry.as_channel.max_count};\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const bool trailer_channel = {cpp_bool(telemetry.as_channel.is_trailer_channel)};\n"
+                f"{tabstr}{TAB_CHARS}using scs_type = {telemetry.as_channel.scs_type};\n"
+                f"{tabstr}{TAB_CHARS}static constexpr scs_value_type_t scs_type_id = {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]};\n"
+                f"{tabstr}{TAB_CHARS}using primitive_type = {telemetry.as_channel.primitive_type};\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
+            )
+        out += f"{tabstr}}};\n"
+        if i != len(telemetries) - 1:
+            out += "\n"
+
+    tabstr = TAB_CHARS * tabcount
+    out += f"{tabstr}}}"
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused",
     "",
@@ -411,6 +474,8 @@ def main() -> None:
         f.write(TelemetryType.cpp())
     with open(OUTPUT_FOLDER.joinpath("telemetry_id_enum.h"), "w", encoding="utf-8") as f:
         f.write(telemetries_ids_enum(telemetries))
+    with open(OUTPUT_FOLDER.joinpath("telemetry_metadata_structs.h"), "w", encoding="utf-8") as f:
+        f.write(telemetry_metadata_structs(telemetries))
 
 
 if __name__ == "__main__":
