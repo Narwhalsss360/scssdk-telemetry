@@ -104,10 +104,12 @@ def type_name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
         return channel_storage(telemetry_or_attr.as_channel)[0]
 
 
-def name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
-    if is_attribute(telemetry_or_attr):
-        return telemetry_or_attr.simple_name
-    return telemetry_or_attr.name
+def name(telemetry_or_attr_str: Telemetry | EventAttribute | str) -> str:
+    if is_attribute(telemetry_or_attr_str):
+        return telemetry_or_attr_str.simple_name
+    if isinstance(telemetry_or_attr_str, str):
+        return telemetry_or_attr_str
+    return telemetry_or_attr_str.name
 
 
 def cpp_bool(boolean: bool) -> str:
