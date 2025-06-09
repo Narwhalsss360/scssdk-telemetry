@@ -674,9 +674,16 @@ def id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     )
 
     for i, telemetry in enumerate(telemetries):
-        cmp_expr: str = f'streq(macro, "{name(telemetry)}")'
-        if not telemetry.is_structure:
-            cmp_expr += f" || streq(macro, {name(telemetry)}::macro)"
+        if telemetry.is_channel and telemetry.as_channel.is_trailer_channel:
+            cmp_expr: str = f'{TAB_CHARS}streq(macro, "{name(telemetry)}") ||\n'
+            for j in range(SCS_TELEMETRY_trailers_count):
+                cmp_expr += f"{tabstr}{TAB_CHARS * 3}streq(macro, \"{name(telemetry)}.{j}\")"
+                if j != SCS_TELEMETRY_trailers_count - 1:
+                    cmp_expr += " ||\n" 
+        else:
+            cmp_expr: str = f'streq(macro, "{name(telemetry)}")'
+            if not telemetry.is_structure:
+                cmp_expr += f" || streq(macro, {name(telemetry)}::macro)"
         out += f"{tabstr}{TAB_CHARS * 2}{cmp_expr} ? {name(telemetry)}::id :\n"
 
     out += f"{tabstr}{TAB_CHARS * 2}LIFETIME_INVALID_ID;\n{tabstr}}}\n"
