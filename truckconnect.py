@@ -337,6 +337,7 @@ class Telemetry:
                 continue
             event_telemetry: Telemetry = Telemetry(Structure(event, []))
             for event_info in event.event_infos:
+                event_info.attributes.insert(0, EventAttribute("", "latest", "latest", "u32", False))
                 event_telemetry.as_structure.children.append(Telemetry(event_info))
                 event_telemetry.as_structure.children[-1].apply_parent_structure(
                     event_telemetry
