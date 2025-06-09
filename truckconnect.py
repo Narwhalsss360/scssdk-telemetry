@@ -11,6 +11,9 @@ TELEMETRY_EVENTS: str = [
     "SCS_TELEMETRY_EVENT_configuration",
     "SCS_TELEMETRY_EVENT_gameplay",
 ]
+EXCLUDE_CHANNELS: dict[str, str] = { # macro and reason
+    "SCS_TELEMETRY_TRUCK_CHANNEL_adblue_average_consumption": "prism::sdk does not find this channel."
+}
 INVALID_TELEMETRY_ID: int = -1
 
 VALUE_STORAGE_TYPE_NAME: str = "value_storage"
@@ -260,6 +263,9 @@ class Telemetry:
     def _load_channel_telemetries(channels: list[Channel]) -> list[Telemetry]:
         channel_telemetries: list[Telemetry] = []
         for channel in channels:
+            if channel.macro in EXCLUDE_CHANNELS:
+                print(f"Excluding {channel.macro}. Reason: {EXCLUDE_CHANNELS[channel.macro]}")
+                continue
             channel_telemetries.append(Telemetry(channel))
         return channel_telemetries
 
