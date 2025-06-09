@@ -642,6 +642,24 @@ def name_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     return out
 
 
+def size_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const size_t size_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return sizeof({name(telemetry)}::storage_type);\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return 0;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused", "", "bool", False, "channel_paused", False, 1
 )
@@ -682,6 +700,7 @@ def main() -> None:
         f.write(f"{scs_type_id_of_function(telemetries)}\n")
         f.write(f"{id_of_function(telemetries)}\n")
         f.write(f"{name_of_function(telemetries)}\n")
+        f.write(f"{size_of_function(telemetries)}\n")
 
 
 if __name__ == "__main__":
