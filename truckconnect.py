@@ -304,6 +304,26 @@ def master_structure(master: Telemetry, tabcount: int = 0) -> str:
     return recurse(tabcount, master)
 
 
+def telemetries_ids_enum(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}namespace {TELEMETRY_ID_ENUM_TYPE_NAME}s {{\n"
+        f"{tabstr}{TAB_CHARS}enum {TELEMETRY_ID_ENUM_TYPE_NAME} : {TELEMETRY_ID_ENUM_BASE_TYPE} {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        out += f"{tabstr}{TAB_CHARS * 2}{telemetry.name} = {i}"
+        if i != len(telemetries) - 1:
+            out += ","
+        out += "\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS}}};\n"
+        f"{tabstr}}};\n"
+    )
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused",
     "",
@@ -326,6 +346,8 @@ def main() -> None:
         OUTPUT_FOLDER.mkdir()
     with open(OUTPUT_FOLDER.joinpath("master_structure.h"), "w", encoding="utf-8") as f:
         f.write(master_structure(telemetries[0]))
+    with open(OUTPUT_FOLDER.joinpath("telemetry_id_enum.h"), "w", encoding="utf-8") as f:
+        f.write(telemetries_ids_enum(telemetries))
 
 
 if __name__ == "__main__":
