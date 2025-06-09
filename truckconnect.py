@@ -10,7 +10,7 @@ from scssdk_dataclasses import (
     load,
     TYPE_SIZE_BY_ID,
     TYPE_MACROS_BY_ID,
-    SCS_TELEMETRY_trailers_count
+    SCS_TELEMETRY_trailers_count,
 )
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
@@ -365,6 +365,40 @@ class Telemetry:
         return channel_telemetries
 
 
+__master_telemetry__: Telemetry | None = None
+__trailer_structure_telemetry__: Telemetry | None = None
+__configuration_trailer_structure_telemetry__: Telemetry | None = None
+
+
+def cache_telemetries(telemetries: list[Telemetry]) -> list[Telemetry]:
+    global __master_telemetry__
+    global __trailer_structure_telemetry__
+    global __configuration_trailer_structure_telemetry__
+    __master_telemetry__ = telemetries[0]
+    __trailer_structure_telemetry__ = next(
+        filter(lambda t: name(t) == "trailer", telemetries)
+    )
+    __configuration_trailer_structure_telemetry__ = next(
+        filter(lambda t: name(t) == "configuration_trailer_info", telemetries)
+    )
+    return telemetries
+
+
+def master_telemetry() -> Telemetry:
+    assert __master_telemetry__, "telemetries not cached"
+    return __master_telemetry__
+
+
+def trailer_structure_telemetry() -> Telemetry:
+    assert __trailer_structure_telemetry__, "telemetries not cached"
+    return __trailer_structure_telemetry__
+
+
+def configuration_trailer_structure_telemetry() -> Telemetry:
+    assert __configuration_trailer_structure_telemetry__, "telemetries not cached"
+    return __configuration_trailer_structure_telemetry__
+
+
 def master_structure(master: Telemetry, tabcount: int = 0) -> str:
     def recurse(tabcount: str, telemetry: Telemetry | EventAttribute):
         tabstr: str = TAB_CHARS * tabcount
@@ -379,10 +413,10 @@ def master_structure(master: Telemetry, tabcount: int = 0) -> str:
                 out += recurse(tabcount + 1, child)
 
             out += f"{tabstr}}}"
-            if name(telemetry) == "trailer":
+            if telemetry == trailer_structure_telemetry():
                 out += f"; std::array<{type_name(telemetry)}, {SCS_TELEMETRY_trailers_count}> {name(telemetry)};\n"
             else:
-                if name(telemetry) != "master":
+                if telemetry != master_telemetry():
                     out += f" {name(telemetry)}"
                 out += ";\n"
         elif telemetry.is_event_info:
@@ -393,7 +427,13 @@ def master_structure(master: Telemetry, tabcount: int = 0) -> str:
             for child in telemetry.as_event_info.attributes:
                 out += recurse(tabcount + 1, child)
 
-            out += f"{tabstr}}} {name(telemetry)};\n"
+            out += f"{tabstr}}}"
+            if telemetry == configuration_trailer_structure_telemetry():
+                out += f"; std::array<{type_name(telemetry)}, {SCS_TELEMETRY_trailers_count}> {name(telemetry)};\n"
+            else:
+                if telemetry != master_telemetry():
+                    out += f" {name(telemetry)}"
+                out += ";\n"
         else:
             out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)} {{}};\n"
 
@@ -434,7 +474,7 @@ def telemetry_metadata_structs(
             f"{tabstr}{TAB_CHARS}static constexpr const telemetry_type telemetry_type = {telemetry.telemetry_type.cpp_value()};\n"
         )
 
-        if telemetry == telemetries[0]:
+        if telemetry == master_telemetry():
             out += (
                 f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = 0;\n"
             )
@@ -449,19 +489,19 @@ def telemetry_metadata_structs(
                 dot_notation += f"{name(parent)}."
             dot_notation += name(telemetry)
 
-            out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = {offsetof(type_name(telemetries[0]), dot_notation)};\n"
+            out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = {offsetof(type_name(master_telemetry()), dot_notation)};\n"
 
         if telemetry.is_structure:
-            out += f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == telemetries[0] else telemetry.parents[::-1])], type_name(telemetry))};\n"
-            if telemetry != telemetries[0]:
+            out += f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == master_telemetry() else telemetry.parents[::-1])], type_name(telemetry))};\n"
+            if telemetry != master_telemetry():
                 out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
         elif telemetry.is_event_info:
             out += (
-                f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == telemetries[0] else telemetry.parents[::-1])], type_name(telemetry))};\n"
+                f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == master_telemetry() else telemetry.parents[::-1])], type_name(telemetry))};\n"
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_event_info.macro}";\n'
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_event_info.expansion}";\n'
             )
-            if telemetry != telemetries[0]:
+            if telemetry != master_telemetry():
                 out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
         elif telemetry.is_channel:
             out += (
@@ -513,8 +553,12 @@ def master_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -
     )
 
     for i, telemetry in enumerate(telemetries):
-        if telemetry.is_channel and telemetry.as_channel.is_trailer_channel:
+        if (
+            telemetry.is_channel and telemetry.as_channel.is_trailer_channel
+        ) or telemetry == trailer_structure_telemetry():
             out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof(master_storage::trailer_storage) * trailer_index : INVALID_OFFSET;\n"
+        elif telemetry == configuration_trailer_structure_telemetry():
+            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof(master_storage::configuration_storage::trailer_storage) * trailer_index : INVALID_OFFSET;\n"
         else:
             out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::master_offset;\n"
 
@@ -754,13 +798,13 @@ def main() -> None:
     channels, events = load()
     channels.insert(0, as_custom_channel(PAUSED_CUSTOM_CHANNEL))
 
-    telemetries: list[Telemetry] = Telemetry.build(channels, events)
+    telemetries: list[Telemetry] = cache_telemetries(Telemetry.build(channels, events))
     print(f"Loaded {len(telemetries)} telemetries.")
 
     if not OUTPUT_FOLDER.exists():
         OUTPUT_FOLDER.mkdir()
     with open(OUTPUT_FOLDER.joinpath("master_structure.h"), "w", encoding="utf-8") as f:
-        f.write(master_structure(telemetries[0]))
+        f.write(master_structure(master_telemetry()))
     with open(
         OUTPUT_FOLDER.joinpath("telemetry_type_enum.h"), "w", encoding="utf-8"
     ) as f:
