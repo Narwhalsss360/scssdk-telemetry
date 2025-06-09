@@ -18,6 +18,13 @@ VALUE_STORAGE_EXTRA_SIZE: int = 1
 VALUE_ARRAY_STORAGE_TYPE_NAME: str = "value_array_storage"
 VALUE_ARRAY_STORAGE_EXTRA_SIZE: int = 1 + 4
 VALUE_VECTOR_STORAGE_TYPE_NAME: str = "value_vector_storage"
+TELEMETRY_ID_ENUM_TYPE_NAME: str = "telemetry_id"
+TELEMETRY_ID_ENUM_BASE_TYPE: str = "uint8_t"
+
+
+def is_attribute(telemetry_or_attr: Telemetry | EventAttribute) -> bool:
+    return isinstance(telemetry_or_attr, EventAttribute)
+
 
 def use_std_string(cpp_type: str) -> str:
     if cpp_type == "scs_value_string_t":
@@ -47,7 +54,7 @@ def attribute_storage(attribute: EventAttribute) -> str:
 
 
 def storage(telemetry_or_attr: Telemetry | EventAttribute) -> tuple[str, int]:
-    if isinstance(telemetry_or_attr, EventAttribute):
+    if is_attribute(telemetry_or_attr):
         return attribute_storage(telemetry_or_attr), None
     elif telemetry_or_attr.is_channel:
         return channel_storage(telemetry_or_attr.as_channel)
@@ -62,6 +69,32 @@ def as_custom_channel(channel: Channel) -> Channel:
 
 def is_custom_channel(channel: Channel) -> bool:
     return hasattr(channel, "_is_custom")
+
+
+def qualify_name(*args) -> str:
+    qualified: str = ""
+    for i, name in enumerate(args):
+        qualified += name
+        if i != len(args) - 1:
+            qualified += "::"
+    return qualified
+
+
+def type_name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
+    if is_attribute(telemetry_or_attr):
+        return attribute_storage(telemetry_or_attr)
+    if telemetry_or_attr.is_structure:
+        return telemetry_or_attr.as_structure.type_name
+    if telemetry_or_attr.is_event_info:
+        return f"{telemetry_or_attr.as_event_info.simple_name}_storage"
+    if telemetry_or_attr.is_channel:
+        return channel_storage(telemetry_or_attr.as_channel)
+
+
+def name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
+    if is_attribute(telemetry_or_attr):
+        return telemetry_or_attr.simple_name
+    return telemetry_or_attr.name
 
 
 class ChannelCategory(Enum):
@@ -100,6 +133,10 @@ class Structure:
         if self.is_event:
             return self.data.simple_name
         return self.data
+
+    @property
+    def type_name(self) -> str:
+        return f"{self.name}_storage"
 
 
 @dataclass
@@ -142,6 +179,19 @@ class Telemetry:
             return 1
         elif self.is_channel:
             return 2
+
+    @property
+    def name(self) -> str:
+        if self.is_structure:
+            return self.as_structure.name
+        elif self.is_event_info:
+            return f"{self.as_event_info.event.simple_name}_{self.as_event_info.simple_name}_info"
+        elif self.is_channel:
+            return self.as_channel.simple_name
+
+    @property
+    def qualified_id(self) -> str:
+        return qualify_name(TELEMETRY_ID_ENUM_TYPE_NAME, self.name)
 
     @staticmethod
     def build(channels: list[Channel], events: list[Event]) -> list[Telemetry]:
@@ -218,9 +268,9 @@ def master_structure(master: Telemetry) -> str:
     def recurse(tabcount: str, telemetry: Telemetry | EventAttribute):
         tabstr: str = TAB_CHARS * tabcount
         if isinstance(telemetry, EventAttribute):
-            out = f"{tabstr}{storage(telemetry)[0]} {telemetry.simple_name};\n"
+            out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)};\n"
         elif telemetry.is_structure:
-            out = f"{tabstr}struct {telemetry.as_structure.name}_storage {{"
+            out = f"{tabstr}struct {type_name(telemetry)} {{"
             if telemetry.as_structure.children:
                 out += "\n"
 
@@ -228,20 +278,20 @@ def master_structure(master: Telemetry) -> str:
                 out += recurse(tabcount + 1, child)
 
             out += f"{tabstr}}}"
-            if telemetry.as_structure.name != "master":
-                out += f" {telemetry.as_structure.name}"
+            if name(telemetry) != "master":
+                out += f" {name(telemetry)}"
             out += ";\n"
         elif telemetry.is_event_info:
-            out = f"{tabstr}struct {telemetry.as_event_info.simple_name}_storage {{"
+            out = f"{tabstr}struct {type_name(telemetry)} {{"
             if telemetry.as_event_info.attributes:
                 out += "\n"
 
             for child in telemetry.as_event_info.attributes:
                 out += recurse(tabcount + 1, child)
 
-            out += f"{tabstr}}} {telemetry.as_event_info.simple_name};\n"
+            out += f"{tabstr}}} {name(telemetry)};\n"
         else:
-            out = f"{tabstr}{storage(telemetry)[0]} {telemetry.as_channel.simple_name};\n"
+            out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)};\n"
 
         return out
 
@@ -249,11 +299,11 @@ def master_structure(master: Telemetry) -> str:
 
 
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
-    "paused",
+    "channel_paused",
     "",
     "bool",
     False,
-    "paused",
+    "channel_paused",
     False,
     1
 )
