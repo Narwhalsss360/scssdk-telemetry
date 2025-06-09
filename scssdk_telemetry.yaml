@@ -850,10 +850,6 @@ events:
   expansion: '5'
   simple_name: configuration
   event_infos:
-  - macro: SCS_TELEMETRY_trailers_count
-    expansion: '10'
-    simple_name: trailers_count
-    attributes: []
   - macro: SCS_TELEMETRY_CONFIG_substances
     expansion: substances
     simple_name: substances
