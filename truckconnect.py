@@ -313,14 +313,18 @@ class Telemetry:
                     assert False, "'of' must always return a ChannelCategory"
             telemetries.append(channel_telemetry)
 
+        channels_structure: Telemetry = Telemetry(
+            Structure(
+                "channels",
+                [general_structure, truck_structure, trailer_structure],
+            )
+        )
+        general_structure.apply_parent_structure(channels_structure)
+        truck_structure.apply_parent_structure(channels_structure)
+        trailer_structure.apply_parent_structure(channels_structure)
         telemetries.extend(
             (
-                Telemetry(
-                    Structure(
-                        "channels",
-                        [general_structure, truck_structure, trailer_structure],
-                    )
-                ),
+                channels_structure,
                 general_structure,
                 truck_structure,
                 trailer_structure,
