@@ -183,9 +183,19 @@ class Telemetry:
         self._parent_structure = parent
 
     @property
-    def parent_structure(self) -> Structure:
+    def parent_structure(self) -> Telemetry:
+        assert self.name != "master", "Master has no parent"
         assert self._parent_structure is not None, "Parent structure must be set."
         return self._parent_structure
+
+    @property
+    def parents(self) -> list[Telemetry]:
+        parents: list[Telemetry] = []
+        current: Telemetry = self
+        while current._parent_structure:
+            parents.append(current._parent_structure)
+            current = current._parent_structure
+        return parents
 
     @property
     def is_channel(self) -> bool:
@@ -285,12 +295,14 @@ class Telemetry:
         master: Telemetry = Telemetry(Structure("master", []))
 
         for telemetry in telemetries:
-            if not telemetry.is_structure:
+            if not telemetry.is_structure or telemetry._parent_structure:
                 continue
             master.as_structure.children.append(telemetry)
             telemetry.apply_parent_structure(master)
         telemetries.insert(0, master)
 
+        for i, telemetry in enumerate(telemetries):
+            telemetry.id = i
 
         return telemetries
 
