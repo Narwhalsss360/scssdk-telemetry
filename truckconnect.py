@@ -118,6 +118,33 @@ class ChannelCategory(Enum):
         assert False, "A channel was not supplied"
 
 
+class TelemetryType(Enum):
+    Structure = "structure"
+    EventInfo = "event_info"
+    Channel = "channel"
+
+    def cpp_value(self) -> str:
+        match self:
+            case TelemetryType.Structure:
+                return "structure"
+            case TelemetryType.EventInfo:
+                return "event_info"
+            case TelemetryType.Channel:
+                return "channel"
+
+    @staticmethod
+    def cpp(tabcount: int = 0) -> str:
+        tabstr: str = TAB_CHARS * tabcount
+        out: str = f"{tabstr}enum class telemetry_type : uint8_t {{\n"
+        for i, enum in enumerate(TelemetryType):
+            out += f"{tabstr}{TAB_CHARS}{enum.value}"
+            if i != len(TelemetryType):
+                out += ","
+            out += "\n"
+        out += f"{tabstr}}};\n"
+        return out
+
+
 @dataclass
 class Structure:
     data: Event | str
@@ -198,6 +225,15 @@ class Telemetry:
     @property
     def qualified_id(self) -> str:
         return qualify_name(TELEMETRY_ID_ENUM_TYPE_NAME, self.name)
+
+    @property
+    def telemetry_type(self) -> TelemetryType:
+        if self.is_structure:
+            return TelemetryType.Structure
+        elif self.is_event_info:
+            return TelemetryType.EventInfo
+        elif self.is_channel:
+            return TelemetryType.Channel
 
     @staticmethod
     def build(channels: list[Channel], events: list[Event]) -> list[Telemetry]:
@@ -349,6 +385,8 @@ def main() -> None:
         OUTPUT_FOLDER.mkdir()
     with open(OUTPUT_FOLDER.joinpath("master_structure.h"), "w", encoding="utf-8") as f:
         f.write(master_structure(telemetries[0]))
+    with open(OUTPUT_FOLDER.joinpath("telemetry_type_enum.h"), "w", encoding="utf-8") as f:
+        f.write(TelemetryType.cpp())
     with open(OUTPUT_FOLDER.joinpath("telemetry_id_enum.h"), "w", encoding="utf-8") as f:
         f.write(telemetries_ids_enum(telemetries))
 
