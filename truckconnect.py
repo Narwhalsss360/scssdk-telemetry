@@ -176,6 +176,8 @@ class Telemetry:
             ),
         )
 
+        for i, telemetry in enumerate(telemetries):
+            telemetry.id = i
         return telemetries
 
     @staticmethod
