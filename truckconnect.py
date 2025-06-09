@@ -270,7 +270,7 @@ class Telemetry:
         return channel_telemetries
 
 
-def master_structure(master: Telemetry) -> str:
+def master_structure(master: Telemetry, tabcount: int = 0) -> str:
     def recurse(tabcount: str, telemetry: Telemetry | EventAttribute):
         tabstr: str = TAB_CHARS * tabcount
         if isinstance(telemetry, EventAttribute):
@@ -301,7 +301,7 @@ def master_structure(master: Telemetry) -> str:
 
         return out
 
-    return recurse(0, master)
+    return recurse(tabcount, master)
 
 
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
