@@ -362,7 +362,7 @@ def master_structure(master: Telemetry, tabcount: int = 0) -> str:
     def recurse(tabcount: str, telemetry: Telemetry | EventAttribute):
         tabstr: str = TAB_CHARS * tabcount
         if isinstance(telemetry, EventAttribute):
-            out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)};\n"
+            out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)} {{}};\n"
         elif telemetry.is_structure:
             out = f"{tabstr}struct {type_name(telemetry)} {{"
             if telemetry.as_structure.children:
@@ -385,7 +385,7 @@ def master_structure(master: Telemetry, tabcount: int = 0) -> str:
 
             out += f"{tabstr}}} {name(telemetry)};\n"
         else:
-            out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)};\n"
+            out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)} {{}};\n"
 
         return out
 
