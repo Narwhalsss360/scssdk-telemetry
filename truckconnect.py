@@ -86,15 +86,6 @@ def is_custom_channel(channel: Channel) -> bool:
     return hasattr(channel, "_is_custom")
 
 
-def qualify_name(*args) -> str:
-    qualified: str = ""
-    for i, name in enumerate(args):
-        qualified += name
-        if i != len(args) - 1:
-            qualified += "::"
-    return qualified
-
-
 def type_name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
     if is_attribute(telemetry_or_attr):
         return attribute_storage(telemetry_or_attr)
@@ -112,6 +103,24 @@ def name(telemetry_or_attr_str: Telemetry | EventAttribute | str) -> str:
     if isinstance(telemetry_or_attr_str, str):
         return telemetry_or_attr_str
     return telemetry_or_attr_str.name
+
+
+def qualify_name(*args: tuple[Telemetry]) -> str:
+    qualified: str = ""
+    for i, node in enumerate(args):
+        qualified += name(node)
+        if i != len(args) - 1:
+            qualified += "::"
+    return qualified
+
+
+def qualify_type_name(telemetry: Telemetry) -> str:
+    return qualify_name(
+        *tuple(
+            name(node) if node.is_channel else type_name(node)
+            for node in telemetry.parents[::-1] + [telemetry]
+        )
+    )
 
 
 def cpp_bool(boolean: bool) -> str:
@@ -492,7 +501,7 @@ def telemetry_metadata_structs(
             out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = {offsetof(type_name(master_telemetry()), dot_notation)};\n"
 
         if telemetry.is_structure:
-            out += f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == master_telemetry() else telemetry.parents[::-1])], type_name(telemetry))};\n"
+            out += f"{tabstr}{TAB_CHARS}using storage_type = {qualify_type_name(telemetry)};\n"
             if telemetry != master_telemetry():
                 out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
         elif telemetry.is_event_info:
@@ -502,7 +511,7 @@ def telemetry_metadata_structs(
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_event_info.expansion}";\n'
             )
             if telemetry != master_telemetry():
-                out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
+                out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
         elif telemetry.is_channel:
             out += (
                 f"{tabstr}{TAB_CHARS}using storage_type = {type_name(telemetry)};\n"
@@ -514,7 +523,7 @@ def telemetry_metadata_structs(
                 f"{tabstr}{TAB_CHARS}using scs_type = {telemetry.as_channel.scs_type};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr scs_value_type_t scs_type_id = {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]};\n"
                 f"{tabstr}{TAB_CHARS}using primitive_type = {telemetry.as_channel.primitive_type};\n"
-                f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
             )
         out += f"{tabstr}}};\n"
         if i != len(telemetries) - 1:
@@ -556,9 +565,9 @@ def master_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -
         if (
             telemetry.is_channel and telemetry.as_channel.is_trailer_channel
         ) or telemetry == trailer_structure_telemetry():
-            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof(master_storage::trailer_storage) * trailer_index : INVALID_OFFSET;\n"
+            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof({qualify_type_name(telemetry.parent_structure)}) * trailer_index : INVALID_OFFSET;\n"
         elif telemetry == configuration_trailer_structure_telemetry():
-            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof(master_storage::configuration_storage::trailer_storage) * trailer_index : INVALID_OFFSET;\n"
+            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof({qualify_type_name(telemetry.parent_structure)}) * trailer_index : INVALID_OFFSET;\n"
         else:
             out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::master_offset;\n"
 
@@ -677,9 +686,11 @@ def id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
         if telemetry.is_channel and telemetry.as_channel.is_trailer_channel:
             cmp_expr: str = f'{TAB_CHARS}streq(macro, "{name(telemetry)}") ||\n'
             for j in range(SCS_TELEMETRY_trailers_count):
-                cmp_expr += f"{tabstr}{TAB_CHARS * 3}streq(macro, \"{name(telemetry)}.{j}\")"
+                cmp_expr += (
+                    f'{tabstr}{TAB_CHARS * 3}streq(macro, "{name(telemetry)}.{j}")'
+                )
                 if j != SCS_TELEMETRY_trailers_count - 1:
-                    cmp_expr += " ||\n" 
+                    cmp_expr += " ||\n"
         else:
             cmp_expr: str = f'streq(macro, "{name(telemetry)}")'
             if not telemetry.is_structure:
