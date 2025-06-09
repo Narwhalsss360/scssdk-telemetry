@@ -2,16 +2,24 @@ from __future__ import annotations
 from enum import Enum
 from pathlib import Path
 from dataclasses import dataclass, field
-from scssdk_dataclasses import Channel, Event, EventInfo, EventAttribute, load, TYPE_SIZE_BY_ID, TYPE_MACROS_BY_ID
+from scssdk_dataclasses import (
+    Channel,
+    Event,
+    EventInfo,
+    EventAttribute,
+    load,
+    TYPE_SIZE_BY_ID,
+    TYPE_MACROS_BY_ID,
+)
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
-TAB_CHARS: str = '\t'
+TAB_CHARS: str = "\t"
 
 TELEMETRY_EVENTS: str = [
     "SCS_TELEMETRY_EVENT_configuration",
     "SCS_TELEMETRY_EVENT_gameplay",
 ]
-EXCLUDE_CHANNELS: dict[str, str] = { # macro and reason
+EXCLUDE_CHANNELS: dict[str, str] = {  # macro and reason
     "SCS_TELEMETRY_TRUCK_CHANNEL_adblue_average_consumption": "prism::sdk does not find this channel."
 }
 INVALID_TELEMETRY_ID: int = -1
@@ -49,7 +57,9 @@ def channel_storage(channel: Channel) -> tuple[str, int]:
         cpp_type = VALUE_STORAGE_TYPE_NAME
         template_args = use_std_string(channel.primitive_type)
 
-    return f"{cpp_type}<{template_args}>", scs_type_id_storage_size(channel.scs_type_id) * channel.max_count
+    return f"{cpp_type}<{template_args}>", scs_type_id_storage_size(
+        channel.scs_type_id
+    ) * channel.max_count
 
 
 def attribute_storage(attribute: EventAttribute) -> str:
@@ -119,9 +129,11 @@ class ChannelCategory(Enum):
             return ChannelCategory.Truck
         if channel.macro.startswith("SCS_TELEMETRY_TRAILER_CHANNEL"):
             return ChannelCategory.Trailer
-        elif channel.macro.startswith(
-            "SCS_TELEMETRY_CHANNEL"
-        ) or channel.macro.startswith("SCS_TELEMETRY_JOB_CHANNEL")or is_custom_channel(channel):
+        elif (
+            channel.macro.startswith("SCS_TELEMETRY_CHANNEL")
+            or channel.macro.startswith("SCS_TELEMETRY_JOB_CHANNEL")
+            or is_custom_channel(channel)
+        ):
             return ChannelCategory.General
         assert False, "A channel was not supplied"
 
@@ -185,7 +197,9 @@ class Telemetry:
 
     def __post_init__(self) -> None:
         self._parent_structure: Telemetry | None = None
-        assert self.is_structure or self.is_event_info or self.is_channel, "telemetry must be either structure, event info or channel"
+        assert self.is_structure or self.is_event_info or self.is_channel, (
+            "telemetry must be either structure, event info or channel"
+        )
 
     def apply_parent_structure(self, parent: Telemetry) -> None:
         assert parent.is_structure, "Parent structure must be set."
@@ -324,7 +338,9 @@ class Telemetry:
             event_telemetry: Telemetry = Telemetry(Structure(event, []))
             for event_info in event.event_infos:
                 event_telemetry.as_structure.children.append(Telemetry(event_info))
-                event_telemetry.as_structure.children[-1].apply_parent_structure(event_telemetry)
+                event_telemetry.as_structure.children[-1].apply_parent_structure(
+                    event_telemetry
+                )
             event_telemetries.append(event_telemetry)
             event_telemetries.extend(event_telemetry.as_structure.children)
         return event_telemetries
@@ -334,7 +350,9 @@ class Telemetry:
         channel_telemetries: list[Telemetry] = []
         for channel in channels:
             if channel.macro in EXCLUDE_CHANNELS:
-                print(f"Excluding {channel.macro}. Reason: {EXCLUDE_CHANNELS[channel.macro]}")
+                print(
+                    f"Excluding {channel.macro}. Reason: {EXCLUDE_CHANNELS[channel.macro]}"
+                )
                 continue
             channel_telemetries.append(Telemetry(channel))
         return channel_telemetries
@@ -386,14 +404,13 @@ def telemetries_ids_enum(telemetries: list[Telemetry], tabcount: int = 0) -> str
 
     out += f"{tabstr}{TAB_CHARS * 2}invalid = static_cast<{TELEMETRY_ID_ENUM_TYPE_NAME}>(-1)\n"
 
-    out += (
-        f"{tabstr}{TAB_CHARS}}};\n"
-        f"{tabstr}}};\n"
-    )
+    out += f"{tabstr}{TAB_CHARS}}};\n{tabstr}}};\n"
     return out
 
 
-def telemetry_metadata_structs(telemetries: list[Telemetry], namespace: str = "metadata", tabcount: int = 0) -> str:
+def telemetry_metadata_structs(
+    telemetries: list[Telemetry], namespace: str = "metadata", tabcount: int = 0
+) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = f"{tabstr}namespace {namespace} {{\n"
     tabstr = TAB_CHARS * (tabcount + 1)
@@ -408,7 +425,9 @@ def telemetry_metadata_structs(telemetries: list[Telemetry], namespace: str = "m
         )
 
         if telemetry == telemetries[0]:
-            out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = 0;\n"
+            out += (
+                f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = 0;\n"
+            )
             out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = 0;\n"
         else:
             parents: list[Telemetry] = telemetry.parents[:-1][::-1]
@@ -419,23 +438,21 @@ def telemetry_metadata_structs(telemetries: list[Telemetry], namespace: str = "m
             out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = {offsetof(type_name(telemetries[0]), dot_notation)};\n"
 
         if telemetry.is_structure:
-            out += (
-                f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == telemetries[0] else telemetry.parents[::-1])], type_name(telemetry))};\n"
-            )
+            out += f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == telemetries[0] else telemetry.parents[::-1])], type_name(telemetry))};\n"
             if telemetry != telemetries[0]:
                 out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
         elif telemetry.is_event_info:
             out += (
-                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = \"{telemetry.as_event_info.macro}\";\n"
-                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro = \"{telemetry.as_event_info.expansion}\";\n"
+                f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_event_info.macro}";\n'
+                f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_event_info.expansion}";\n'
             )
-            if telemetry != telemetries[0]: 
+            if telemetry != telemetries[0]:
                 out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
         elif telemetry.is_channel:
             out += (
                 f"{tabstr}{TAB_CHARS}using storage_type = {type_name(telemetry)};\n"
-                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = \"{telemetry.as_channel.macro}\";\n"
-                f"{tabstr}{TAB_CHARS}static constexpr const char* const macro = \"{telemetry.as_channel.expansion}\";\n"
+                f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_channel.macro}";\n'
+                f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_channel.expansion}";\n'
                 f"{tabstr}{TAB_CHARS}static constexpr const bool indexed = {cpp_bool(telemetry.as_channel.indexed)};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const size_t max_count = {telemetry.as_channel.max_count};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const bool trailer_channel = {cpp_bool(telemetry.as_channel.is_trailer_channel)};\n"
@@ -461,9 +478,7 @@ def telemetry_type_of_function(telemetries: list[Telemetry], tabcount: int = 0) 
     )
 
     for i, telemetry in enumerate(telemetries):
-        out += (
-            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::telemetry_type;\n"
-        )
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::telemetry_type;\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return telemetry_type::invalid;\n"
@@ -482,9 +497,7 @@ def master_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -
     )
 
     for i, telemetry in enumerate(telemetries):
-        out += (
-            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::master_offset;\n"
-        )
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::master_offset;\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
@@ -494,7 +507,9 @@ def master_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -
     return out
 
 
-def structure_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+def structure_offset_of_function(
+    telemetries: list[Telemetry], tabcount: int = 0
+) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
         f"{tabstr}constexpr const size_t& structure_offset_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
@@ -502,9 +517,7 @@ def structure_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0
     )
 
     for i, telemetry in enumerate(telemetries):
-        out += (
-            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::structure_offset;\n"
-        )
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::structure_offset;\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
@@ -522,9 +535,7 @@ def indexed_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     )
 
     for i, telemetry in enumerate(filter(lambda t: t.is_channel, telemetries)):
-        out += (
-            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::indexed;\n"
-        )
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::indexed;\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return false;\n"
@@ -542,9 +553,7 @@ def max_count_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     )
 
     for i, telemetry in enumerate(filter(lambda t: t.is_channel, telemetries)):
-        out += (
-            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::max_count;\n"
-        )
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::max_count;\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return 1;\n"
@@ -562,9 +571,7 @@ def is_trailer_channel_function(telemetries: list[Telemetry], tabcount: int = 0)
     )
 
     for i, telemetry in enumerate(filter(lambda t: t.is_channel, telemetries)):
-        out += (
-            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::trailer_channel;\n"
-        )
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::trailer_channel;\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return false;\n"
@@ -575,13 +582,7 @@ def is_trailer_channel_function(telemetries: list[Telemetry], tabcount: int = 0)
 
 
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
-    "channel_paused",
-    "",
-    "bool",
-    False,
-    "channel_paused",
-    False,
-    1
+    "channel_paused", "", "bool", False, "channel_paused", False, 1
 )
 
 
@@ -596,13 +597,21 @@ def main() -> None:
         OUTPUT_FOLDER.mkdir()
     with open(OUTPUT_FOLDER.joinpath("master_structure.h"), "w", encoding="utf-8") as f:
         f.write(master_structure(telemetries[0]))
-    with open(OUTPUT_FOLDER.joinpath("telemetry_type_enum.h"), "w", encoding="utf-8") as f:
+    with open(
+        OUTPUT_FOLDER.joinpath("telemetry_type_enum.h"), "w", encoding="utf-8"
+    ) as f:
         f.write(TelemetryType.cpp())
-    with open(OUTPUT_FOLDER.joinpath("telemetry_id_enum.h"), "w", encoding="utf-8") as f:
+    with open(
+        OUTPUT_FOLDER.joinpath("telemetry_id_enum.h"), "w", encoding="utf-8"
+    ) as f:
         f.write(telemetries_ids_enum(telemetries))
-    with open(OUTPUT_FOLDER.joinpath("telemetry_metadata_structs.h"), "w", encoding="utf-8") as f:
+    with open(
+        OUTPUT_FOLDER.joinpath("telemetry_metadata_structs.h"), "w", encoding="utf-8"
+    ) as f:
         f.write(telemetry_metadata_structs(telemetries))
-    with open(OUTPUT_FOLDER.joinpath("telemetry_metadata_functions.h"), "w", encoding="utf-8") as f:
+    with open(
+        OUTPUT_FOLDER.joinpath("telemetry_metadata_functions.h"), "w", encoding="utf-8"
+    ) as f:
         f.write(f"{telemetry_type_of_function(telemetries)}\n")
         f.write(f"{master_offset_of_function(telemetries)}\n")
         f.write(f"{structure_offset_of_function(telemetries)}\n")
