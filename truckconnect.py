@@ -55,6 +55,15 @@ def storage(telemetry_or_attr: Telemetry | EventAttribute) -> tuple[str, int]:
     assert False, "Can only get storage of a channel or event attribute"
 
 
+def as_custom_channel(channel: Channel) -> Channel:
+    channel._is_custom = None
+    return channel
+
+
+def is_custom_channel(channel: Channel) -> bool:
+    return hasattr(channel, "_is_custom")
+
+
 class ChannelCategory(Enum):
     General = (0,)
     Truck = (1,)
@@ -68,7 +77,7 @@ class ChannelCategory(Enum):
             return ChannelCategory.Trailer
         elif channel.macro.startswith(
             "SCS_TELEMETRY_CHANNEL"
-        ) or channel.macro.startswith("SCS_TELEMETRY_JOB_CHANNEL"):
+        ) or channel.macro.startswith("SCS_TELEMETRY_JOB_CHANNEL")or is_custom_channel(channel):
             return ChannelCategory.General
         assert False, "A channel was not supplied"
 
@@ -239,8 +248,22 @@ def master_structure(master: Telemetry) -> str:
     return recurse(0, master)
 
 
+PAUSED_CUSTOM_CHANNEL: Channel = Channel(
+    "paused",
+    "",
+    "bool",
+    False,
+    "paused",
+    False,
+    1
+)
+
+
 def main() -> None:
-    telemetries: list[Telemetry] = Telemetry.build(*load())
+    channels, events = load()
+    channels.insert(0, as_custom_channel(PAUSED_CUSTOM_CHANNEL))
+
+    telemetries: list[Telemetry] = Telemetry.build(channels, events)
     print(f"Loaded {len(telemetries)} telemetries.")
 
     if not OUTPUT_FOLDER.exists():
