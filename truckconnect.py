@@ -443,6 +443,7 @@ def telemetry_metadata_structs(
                 out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
         elif telemetry.is_event_info:
             out += (
+                f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == telemetries[0] else telemetry.parents[::-1])], type_name(telemetry))};\n"
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_event_info.macro}";\n'
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_event_info.expansion}";\n'
             )
