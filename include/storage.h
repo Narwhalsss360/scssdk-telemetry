@@ -1,3 +1,5 @@
+struct scs_invalid_t;
+
 template <typename T>
 struct value_storage {
     T value {};

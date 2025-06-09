@@ -175,7 +175,17 @@ class Telemetry:
     id: int = field(default=INVALID_TELEMETRY_ID)
 
     def __post_init__(self) -> None:
+        self._parent_structure: Telemetry | None = None
         assert self.is_structure or self.is_event_info or self.is_channel, "telemetry must be either structure, event info or channel"
+
+    def apply_parent_structure(self, parent: Telemetry) -> None:
+        assert parent.is_structure, "Parent structure must be set."
+        self._parent_structure = parent
+
+    @property
+    def parent_structure(self) -> Structure:
+        assert self._parent_structure is not None, "Parent structure must be set."
+        return self._parent_structure
 
     @property
     def is_channel(self) -> bool:
@@ -246,10 +256,13 @@ class Telemetry:
             match ChannelCategory.of(channel_telemetry.telemetry):
                 case ChannelCategory.General:
                     general_structure.telemetry.children.append(channel_telemetry)
+                    channel_telemetry.apply_parent_structure(general_structure)
                 case ChannelCategory.Truck:
                     truck_structure.telemetry.children.append(channel_telemetry)
+                    channel_telemetry.apply_parent_structure(truck_structure)
                 case ChannelCategory.Trailer:
                     trailer_structure.telemetry.children.append(channel_telemetry)
+                    channel_telemetry.apply_parent_structure(trailer_structure)
                 case _:
                     assert False, "'of' must always return a ChannelCategory"
             telemetries.append(channel_telemetry)
@@ -269,16 +282,16 @@ class Telemetry:
         )
 
         telemetries.sort(key=lambda t: t.rank)
+        master: Telemetry = Telemetry(Structure("master", []))
 
-        telemetries.insert(
-            0,
-            Telemetry(
-                Structure("master", list(filter(lambda t: t.is_structure, telemetries)))
-            ),
-        )
+        for telemetry in telemetries:
+            if not telemetry.is_structure:
+                continue
+            master.as_structure.children.append(telemetry)
+            telemetry.apply_parent_structure(master)
+        telemetries.insert(0, master)
 
-        for i, telemetry in enumerate(telemetries):
-            telemetry.id = i
+
         return telemetries
 
     @staticmethod
@@ -287,15 +300,12 @@ class Telemetry:
         for event in events:
             if event.macro not in TELEMETRY_EVENTS:
                 continue
-            event_telemetries.append(
-                Telemetry(
-                    Structure(
-                        event,
-                        [Telemetry(event_info) for event_info in event.event_infos],
-                    )
-                )
-            )
-            event_telemetries.extend(event_telemetries[-1].telemetry.children)
+            event_telemetry: Telemetry = Telemetry(Structure(event, []))
+            for event_info in event.event_infos:
+                event_telemetry.as_structure.children.append(Telemetry(event_info))
+                event_telemetry.as_structure.children[-1].apply_parent_structure(event_telemetry)
+            event_telemetries.append(event_telemetry)
+            event_telemetries.extend(event_telemetry.as_structure.children)
         return event_telemetries
 
     @staticmethod
