@@ -923,6 +923,12 @@ def id_name_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     return out
 
 
+def indicize_trailer_telemetry_expansion(telemetry: Telemetry, index: int) -> str:
+    assert 0 <= index < SCS_TELEMETRY_trailers_count, "index out of range"
+    assert telemetry.is_channel or telemetry.is_event_info, "trailer is only a channel or event info"
+    return telemetry.telemetry.expansion.replace("trailer", f"trailer.{index}")
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused", "", "bool", False, "channel_paused", False, 1
 )
