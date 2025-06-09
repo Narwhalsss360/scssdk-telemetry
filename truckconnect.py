@@ -514,6 +514,26 @@ def structure_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0
     return out
 
 
+def indexed_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const bool& indexed(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(filter(lambda t: t.is_channel, telemetries)):
+        out += (
+            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::indexed;\n"
+        )
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return false;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused",
     "",
@@ -546,6 +566,7 @@ def main() -> None:
         f.write(f"{telemetry_type_of_function(telemetries)}\n")
         f.write(f"{master_offset_of_function(telemetries)}\n")
         f.write(f"{structure_offset_of_function(telemetries)}\n")
+        f.write(f"{indexed_function(telemetries)}\n")
 
 
 if __name__ == "__main__":
