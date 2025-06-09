@@ -101,8 +101,8 @@ def name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
 
 
 class ChannelCategory(Enum):
-    General = (0,)
-    Truck = (1,)
+    General = 0
+    Truck = 1
     Trailer = 2
 
     @staticmethod
