@@ -337,7 +337,9 @@ class Telemetry:
                 continue
             event_telemetry: Telemetry = Telemetry(Structure(event, []))
             for event_info in event.event_infos:
-                event_info.attributes.insert(0, EventAttribute("", "latest", "latest", "u32", False))
+                event_info.attributes.insert(
+                    0, EventAttribute("", "latest", "latest", "u32", False)
+                )
                 event_telemetry.as_structure.children.append(Telemetry(event_info))
                 event_telemetry.as_structure.children[-1].apply_parent_structure(
                     event_telemetry
@@ -613,15 +615,12 @@ def id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     )
 
     for i, telemetry in enumerate(telemetries):
-        cmp_expr: str = f"streq(macro, \"{name(telemetry)}\")"
+        cmp_expr: str = f'streq(macro, "{name(telemetry)}")'
         if not telemetry.is_structure:
             cmp_expr += f" || streq(macro, {name(telemetry)}::macro)"
         out += f"{tabstr}{TAB_CHARS * 2}{cmp_expr} ? {name(telemetry)}::id :\n"
 
-    out += (
-        f"{tabstr}{TAB_CHARS * 2}LIFETIME_INVALID_ID;\n"
-        f"{tabstr}}}\n"
-    )
+    out += f"{tabstr}{TAB_CHARS * 2}LIFETIME_INVALID_ID;\n{tabstr}}}\n"
     return out
 
 
@@ -633,7 +632,7 @@ def name_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     )
 
     for i, telemetry in enumerate(telemetries):
-        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return \"{name(telemetry)}\";\n"
+        out += f'{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return "{name(telemetry)}";\n'
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return nullptr;\n"
@@ -679,7 +678,9 @@ def offset_of_latest_function(telemetries: list[Telemetry], tabcount: int = 0) -
     return out
 
 
-def event_info_member_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+def event_info_member_offset_of_function(
+    telemetries: list[Telemetry], tabcount: int = 0
+) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
         f"{tabstr}constexpr const size_t event_info_member_offset_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const char* const member) {{\n"
@@ -692,7 +693,7 @@ def event_info_member_offset_of_function(telemetries: list[Telemetry], tabcount:
             f"{tabstr}{TAB_CHARS * 3}return\n"
         )
         for attribute in telemetry.as_event_info.attributes:
-            out += f"{tabstr}{TAB_CHARS * 4}streq(member, \"{attribute.simple_name}\") ? offsetof({name(telemetry)}::storage_type, {attribute.simple_name}) :\n"
+            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.simple_name}") ? offsetof({name(telemetry)}::storage_type, {attribute.simple_name}) :\n'
         out += f"{tabstr}{TAB_CHARS * 4}INVALID_OFFSET;\n"
 
     out += (
@@ -703,7 +704,9 @@ def event_info_member_offset_of_function(telemetries: list[Telemetry], tabcount:
     return out
 
 
-def event_info_member_scs_type_id_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+def event_info_member_scs_type_id_function(
+    telemetries: list[Telemetry], tabcount: int = 0
+) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
         f"{tabstr}constexpr const scs_value_type_t event_info_member_scs_type_id(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const char* const member) {{\n"
@@ -716,7 +719,7 @@ def event_info_member_scs_type_id_function(telemetries: list[Telemetry], tabcoun
             f"{tabstr}{TAB_CHARS * 3}return\n"
         )
         for attribute in telemetry.as_event_info.attributes:
-            out += f"{tabstr}{TAB_CHARS * 4}streq(member, \"{attribute.simple_name}\") ? {TYPE_MACROS_BY_ID[attribute.scs_type_id]} :\n"
+            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.simple_name}") ? {TYPE_MACROS_BY_ID[attribute.scs_type_id]} :\n'
         out += f"{tabstr}{TAB_CHARS * 4}SCS_VALUE_TYPE_INVALID;\n"
 
     out += (
