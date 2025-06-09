@@ -448,6 +448,26 @@ def telemetry_metadata_structs(telemetries: list[Telemetry], namespace: str = "m
     return out
 
 
+def telemetry_type_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const telemetry_type& telemtry_type_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        out += (
+            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::telemetry_type;\n"
+        )
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return static_cast<telemetry_type>(-1);\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused",
     "",
@@ -476,6 +496,8 @@ def main() -> None:
         f.write(telemetries_ids_enum(telemetries))
     with open(OUTPUT_FOLDER.joinpath("telemetry_metadata_structs.h"), "w", encoding="utf-8") as f:
         f.write(telemetry_metadata_structs(telemetries))
+    with open(OUTPUT_FOLDER.joinpath("telemetry_metadata_functions.h"), "w", encoding="utf-8") as f:
+        f.write(f"{telemetry_type_of_function(telemetries)}\n")
 
 
 if __name__ == "__main__":
