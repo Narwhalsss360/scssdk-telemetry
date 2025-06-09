@@ -92,7 +92,7 @@ def type_name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
     if telemetry_or_attr.is_structure:
         return telemetry_or_attr.as_structure.type_name
     if telemetry_or_attr.is_event_info:
-        return f"{telemetry_or_attr.as_event_info.simple_name}_storage"
+        return f"{name(telemetry_or_attr.parent_structure)}_{telemetry_or_attr.as_event_info.simple_name}_storage"
     if telemetry_or_attr.is_channel:
         return channel_storage(telemetry_or_attr.as_channel)[0]
 
