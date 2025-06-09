@@ -130,6 +130,7 @@ class TelemetryType(Enum):
     Structure = "structure"
     EventInfo = "event_info"
     Channel = "channel"
+    Invalid = "invalid = static_cast<telemetry_type>(-1)"
 
     def cpp_value(self) -> str:
         match self:
@@ -381,10 +382,9 @@ def telemetries_ids_enum(telemetries: list[Telemetry], tabcount: int = 0) -> str
     )
 
     for i, telemetry in enumerate(telemetries):
-        out += f"{tabstr}{TAB_CHARS * 2}{telemetry.name} = {i}"
-        if i != len(telemetries) - 1:
-            out += ","
-        out += "\n"
+        out += f"{tabstr}{TAB_CHARS * 2}{telemetry.name} = {i},\n"
+
+    out += f"{tabstr}{TAB_CHARS * 2}invalid = static_cast<{TELEMETRY_ID_ENUM_TYPE_NAME}>(-1)\n"
 
     out += (
         f"{tabstr}{TAB_CHARS}}};\n"
@@ -461,7 +461,7 @@ def telemetry_type_of_function(telemetries: list[Telemetry], tabcount: int = 0) 
         )
 
     out += (
-        f"{tabstr}{TAB_CHARS * 2}default: return static_cast<telemetry_type>(-1);\n"
+        f"{tabstr}{TAB_CHARS * 2}default: return telemetry_type::invalid;\n"
         f"{tabstr}{TAB_CHARS}}}\n"
         f"{tabstr}}}\n"
     )
