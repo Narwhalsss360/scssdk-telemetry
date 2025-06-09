@@ -147,6 +147,9 @@ class Telemetry:
     telemetry: Channel | EventInfo | Structure
     id: int = field(default=INVALID_TELEMETRY_ID)
 
+    def __post_init__(self) -> None:
+        assert self.is_structure or self.is_event_info or self.is_channel, "telemetry must be either structure, event info or channel"
+
     @property
     def is_channel(self) -> bool:
         return isinstance(self.telemetry, Channel)
