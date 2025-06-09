@@ -407,7 +407,10 @@ def telemetry_metadata_structs(telemetries: list[Telemetry], namespace: str = "m
             f"{tabstr}{TAB_CHARS}static constexpr const telemetry_type telemetry_type = {telemetry.telemetry_type.cpp_value()};\n"
         )
 
-        if telemetry != telemetries[0]:
+        if telemetry == telemetries[0]:
+            out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset = 0;\n"
+            out += f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = 0;\n"
+        else:
             parents: list[Telemetry] = telemetry.parents[:-1][::-1]
             dot_notation: str = ""
             for parent in parents:
@@ -468,6 +471,47 @@ def telemetry_type_of_function(telemetries: list[Telemetry], tabcount: int = 0) 
     return out
 
 
+def master_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const size_t INVALID_OFFSET = static_cast<size_t>(-1);\n\n"
+        f"{tabstr}constexpr const size_t& master_offset_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        out += (
+            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::master_offset;\n"
+        )
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
+def structure_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const size_t& structure_offset_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        out += (
+            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::structure_offset;\n"
+        )
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused",
     "",
@@ -498,6 +542,7 @@ def main() -> None:
         f.write(telemetry_metadata_structs(telemetries))
     with open(OUTPUT_FOLDER.joinpath("telemetry_metadata_functions.h"), "w", encoding="utf-8") as f:
         f.write(f"{telemetry_type_of_function(telemetries)}\n")
+        f.write(f"{master_offset_of_function(telemetries)}\n")
 
 
 if __name__ == "__main__":
