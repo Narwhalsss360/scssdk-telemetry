@@ -524,6 +524,7 @@ def telemetry_metadata_structs(
                 f"{tabstr}{TAB_CHARS}static constexpr scs_value_type_t scs_type_id = {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]};\n"
                 f"{tabstr}{TAB_CHARS}using primitive_type = {telemetry.as_channel.primitive_type};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const size_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
+                f"{tabstr}{TAB_CHARS}static constexpr const bool custom_channel = {cpp_bool(is_custom_channel(telemetry.as_channel))};\n"
             )
         out += f"{tabstr}}};\n"
         if i != len(telemetries) - 1:
@@ -807,6 +808,24 @@ def event_info_member_scs_type_id_function(
     return out
 
 
+def is_custom_channel_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const bool is_custom_channel(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(filter(lambda t: t.is_channel, telemetries)):
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::custom_channel;\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return false;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused", "", "bool", False, "channel_paused", False, 1
 )
@@ -851,6 +870,7 @@ def main() -> None:
         f.write(f"{offset_of_latest_function(telemetries)}\n")
         f.write(f"{event_info_member_offset_of_function(telemetries)}\n")
         f.write(f"{event_info_member_scs_type_id_function(telemetries)}\n")
+        f.write(f"{is_custom_channel_function(telemetries)}\n")
 
 
 if __name__ == "__main__":
