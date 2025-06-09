@@ -126,11 +126,11 @@ class TelemetryType(Enum):
     def cpp_value(self) -> str:
         match self:
             case TelemetryType.Structure:
-                return "structure"
+                return "telemetry_type::structure"
             case TelemetryType.EventInfo:
-                return "event_info"
+                return "telemetry_type::event_info"
             case TelemetryType.Channel:
-                return "channel"
+                return "telemetry_type::channel"
 
     @staticmethod
     def cpp(tabcount: int = 0) -> str:
