@@ -599,6 +599,30 @@ def scs_type_id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> 
     return out
 
 
+def id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr bool streq(char const* a, char const* b) {{\n"
+        f"{tabstr}{TAB_CHARS}return *a == *b && (*a == '\\0' || streq(a + 1, b + 1));\n"
+        f"{tabstr}}}\n\n"
+        f"constexpr const {TELEMETRY_ID_ENUM_TYPE_NAME} LIFETIME_INVALID_ID = {TELEMETRY_ID_ENUM_TYPE_NAME}::invalid;\n\n"
+        f"{tabstr}constexpr const telemetry_id& id_of(const char* const macro) {{\n"
+        f"{tabstr}{TAB_CHARS}return\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        cmp_expr: str = f"streq(macro, \"{name(telemetry)}\")"
+        if not telemetry.is_structure:
+            cmp_expr += f" || streq(macro, {name(telemetry)}::macro)"
+        out += f"{tabstr}{TAB_CHARS * 2}{cmp_expr} ? {name(telemetry)}::id :\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}LIFETIME_INVALID_ID;\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
     "channel_paused", "", "bool", False, "channel_paused", False, 1
 )
@@ -637,6 +661,7 @@ def main() -> None:
         f.write(f"{max_count_function(telemetries)}\n")
         f.write(f"{is_trailer_channel_function(telemetries)}\n")
         f.write(f"{scs_type_id_of_function(telemetries)}\n")
+        f.write(f"{id_of_function(telemetries)}\n")
 
 
 if __name__ == "__main__":
