@@ -921,10 +921,10 @@ def id_name_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     )
 
     for i, telemetry in enumerate(telemetries):
-        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return \"{telemetry.name}\";\n"
+        out += f'{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return "{telemetry.name}";\n'
 
     out += (
-        f"{tabstr}{TAB_CHARS * 2}default: return \"invalid\";\n"
+        f'{tabstr}{TAB_CHARS * 2}default: return "invalid";\n'
         f"{tabstr}{TAB_CHARS}}}\n"
         f"{tabstr}}}\n"
     )
@@ -933,12 +933,25 @@ def id_name_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
 
 def indicize_trailer_telemetry_expansion(telemetry: Telemetry, index: int) -> str:
     assert 0 <= index < SCS_TELEMETRY_trailers_count, "index out of range"
-    assert telemetry.is_channel or telemetry.is_event_info, "trailer is only a channel or event info"
+    assert telemetry.is_channel or telemetry.is_event_info, (
+        "trailer is only a channel or event info"
+    )
     return telemetry.telemetry.expansion.replace("trailer", f"trailer.{index}")
 
 
-def registration_for(telemetry: Telemetry, channel_callback: str, indexed_channel_callback: str, trailer_channel_callback: str, indexed_trailer_callback: str, event_callack: str, metadata_namespace: str = "metadata", tabcount: int = 1) -> str:
-    assert (telemetry.is_channel and not is_custom_channel(telemetry.as_channel)) or (telemetry.is_structure and telemetry.as_structure.is_event), "Can only register for channels and events"
+def registration_for(
+    telemetry: Telemetry,
+    channel_callback: str,
+    indexed_channel_callback: str,
+    trailer_channel_callback: str,
+    indexed_trailer_callback: str,
+    event_callack: str,
+    metadata_namespace: str = "metadata",
+    tabcount: int = 1,
+) -> str:
+    assert (telemetry.is_channel and not is_custom_channel(telemetry.as_channel)) or (
+        telemetry.is_structure and telemetry.as_structure.is_event
+    ), "Can only register for channels and events"
     tabstr: str = TAB_CHARS * tabcount
     out: str = ""
 
@@ -947,11 +960,11 @@ def registration_for(telemetry: Telemetry, channel_callback: str, indexed_channe
             if telemetry.as_channel.indexed:
                 out += f"{tabstr}for (uint32_t i = 0; i < {metadata_namespace}::{name(telemetry)}::max_count; i++) {{\n"
                 for i in range(SCS_TELEMETRY_trailers_count):
-                    out += f"{tabstr}{TAB_CHARS}register_for_channel(\"{indicize_trailer_telemetry_expansion(telemetry, i)}\", i, {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]}, SCS_TELEMETRY_CHANNEL_FLAG_none, {indexed_trailer_callback}<{metadata_namespace}::{name(telemetry)}, {i}>, nullptr);\n"
+                    out += f'{tabstr}{TAB_CHARS}register_for_channel("{indicize_trailer_telemetry_expansion(telemetry, i)}", i, {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]}, SCS_TELEMETRY_CHANNEL_FLAG_none, {indexed_trailer_callback}<{metadata_namespace}::{name(telemetry)}, {i}>, nullptr);\n'
                 out += f"{tabstr}}}\n"
             else:
                 for i in range(SCS_TELEMETRY_trailers_count):
-                    out += f"{tabstr}register_for_channel(\"{indicize_trailer_telemetry_expansion(telemetry, i)}\", SCS_U32_NIL, {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]}, SCS_TELEMETRY_CHANNEL_FLAG_none, {trailer_channel_callback}<{metadata_namespace}::{name(telemetry)}, {i}>, nullptr);\n"
+                    out += f'{tabstr}register_for_channel("{indicize_trailer_telemetry_expansion(telemetry, i)}", SCS_U32_NIL, {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]}, SCS_TELEMETRY_CHANNEL_FLAG_none, {trailer_channel_callback}<{metadata_namespace}::{name(telemetry)}, {i}>, nullptr);\n'
         elif telemetry.as_channel.indexed:
             out += (
                 f"{tabstr}for (uint32_t i = 0; i < {metadata_namespace}::{name(telemetry)}::max_count; i++) {{\n"
@@ -966,12 +979,36 @@ def registration_for(telemetry: Telemetry, channel_callback: str, indexed_channe
     return out
 
 
-def register_all_function(telemetries: list[Telemetry], channel_callback: str, indexed_channel_callback: str, trailer_channel_callback: str, indexed_trailer_callback: str, event_callback: str, metadata_namespace: str = "metadata", tabcount: int = 0) -> str:
+def register_all_function(
+    telemetries: list[Telemetry],
+    channel_callback: str,
+    indexed_channel_callback: str,
+    trailer_channel_callback: str,
+    indexed_trailer_callback: str,
+    event_callback: str,
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0,
+) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = f"{tabstr}void register_all(scs_telemetry_register_for_channel_t register_for_channel, scs_telemetry_register_for_event_t register_for_event) {{\n"
-    registerables: list[Telemetry] = list(filter(lambda t: (t.is_channel and not is_custom_channel(t.as_channel)) or (t.is_structure and t.as_structure.is_event), telemetries))
+    registerables: list[Telemetry] = list(
+        filter(
+            lambda t: (t.is_channel and not is_custom_channel(t.as_channel))
+            or (t.is_structure and t.as_structure.is_event),
+            telemetries,
+        )
+    )
     for telemetry in registerables:
-        out += registration_for(telemetry, channel_callback, indexed_channel_callback, trailer_channel_callback, indexed_trailer_callback, event_callback, metadata_namespace, tabcount + 1)
+        out += registration_for(
+            telemetry,
+            channel_callback,
+            indexed_channel_callback,
+            trailer_channel_callback,
+            indexed_trailer_callback,
+            event_callback,
+            metadata_namespace,
+            tabcount + 1,
+        )
     out += f"{tabstr}}}\n"
     return out
 
@@ -1023,10 +1060,12 @@ def main() -> None:
         f.write(f"{is_custom_channel_function(telemetries)}\n")
         f.write(f"{metadata_value_of_function(telemetries)}\n")
         f.write(f"{id_name_function(telemetries)}\n")
-    with open(
-        OUTPUT_FOLDER.joinpath("register_all.cpp"), "w", encoding="utf-8"
-    ) as f:
-        f.write(register_all_function(telemetries, "store", "store", "store", "store", "handle_event"))
+    with open(OUTPUT_FOLDER.joinpath("register_all.cpp"), "w", encoding="utf-8") as f:
+        f.write(
+            register_all_function(
+                telemetries, "store", "store", "store", "store", "handle_event"
+            )
+        )
 
 
 if __name__ == "__main__":
