@@ -18,6 +18,13 @@ struct value_vector_storage {
     std::vector<T> values {};
 };
 
+//Avoid template specialization for bool to avoid potentially non-contiguous values.
+//(Does not necessarily store its elements as a contiguous array.)
+template <>
+struct value_vector_storage<bool> {
+    std::vector<uint8_t> values {};
+};
+
 template <typename T>
 static void append_bytes(const value_storage<T>& storage, std::vector<uint8_t>& out) {
     const uint8_t* const& start = reinterpret_cast<const uint8_t*>(&storage);
@@ -86,7 +93,7 @@ static void append_bytes(const value_vector_storage<T>& storage, std::vector<uin
     const size_t count = storage.values.size();
     const uint8_t* const& count_start = reinterpret_cast<const uint8_t*>(&count);
     const size_t count_size = sizeof(size_t);
-    const uint8_t* const& data_start = reinterpret_cast<const uint8_t*>(&storage.values.front());
+    const uint8_t* const& data_start = reinterpret_cast<const uint8_t*>(&storage.values.front()); // reinterpret_cast<const uint8_t*>(&storage.values.front());
     const size_t data_size = sizeof(T) * count;
 
     out.resize(out.size() + count_size + data_size);
