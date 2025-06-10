@@ -594,6 +594,10 @@ def telemetry_metadata_structs(
                 f"{tabstr}{TAB_CHARS}static constexpr const bool custom_channel = {cpp_bool(is_custom_channel(telemetry.as_channel))};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const metadata_value metadata_value = metadata_value(id, telemetry_type, master_offset, structure_offset, sizeof(storage_type), macro_identifier, macro, indexed, max_count, trailer_channel, scs_type_id, custom_channel);\n"
             )
+
+            if telemetry.as_channel.is_trailer_channel:
+                out += f"{tabstr}{TAB_CHARS}static constexpr const size_t master_offset_of_trailer_index(const size_t& trailer_index) {{ return 0 <= trailer_index &&  trailer_index < SCS_TELEMETRY_trailers_count ? (master_offset + sizeof({qualify_type_name(telemetry.parent_structure)}) * trailer_index) : INVALID_OFFSET; }}\n"
+
         out += f"{tabstr}}};\n"
         if i != len(telemetries) - 1:
             out += "\n"
