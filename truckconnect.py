@@ -65,7 +65,7 @@ def channel_storage(channel: Channel) -> tuple[str, int]:
 
 
 def attribute_storage(attribute: EventAttribute) -> str:
-    return f"{VALUE_VECTOR_STORAGE_TYPE_NAME if attribute.indexed else VALUE_STORAGE_TYPE_NAME}<{attribute.primitive_type}>"
+    return f"{VALUE_VECTOR_STORAGE_TYPE_NAME if attribute.indexed else VALUE_STORAGE_TYPE_NAME}<{use_std_string(attribute.primitive_type)}>"
 
 
 def storage(telemetry_or_attr: Telemetry | EventAttribute) -> tuple[str, int]:
