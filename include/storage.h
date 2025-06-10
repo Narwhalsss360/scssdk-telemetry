@@ -1,3 +1,10 @@
+#pragma once
+#include <stdint.h>
+#include <array>
+#include <vector>
+#include <algorithm>
+#include <string>
+
 struct scs_invalid_t;
 
 template <typename T>
@@ -27,7 +34,7 @@ struct value_vector_storage {
     std::vector<T> values{};
     const inline uint32_t count() const { return static_cast<uint32_t>(values.size()); };
 
-    static constexpr const uint32_t packet_size =
+    static constexpr const uint32_t packed_size =
         sizeof(values);
 };
 
