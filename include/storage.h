@@ -4,6 +4,10 @@ template <typename T>
 struct value_storage {
     bool initialized = false;
     T value{};
+
+    static constexpr const uint32_t packed_size =
+        sizeof(initialized) +
+        sizeof(value);
 };
 
 template <typename T, uint32_t max_count>
@@ -11,12 +15,20 @@ struct value_array_storage {
     bool initialized = false;
     std::array<T, max_count> values{};
     uint32_t count;
+
+    static constexpr const uint32_t packed_size =
+        sizeof(initialized) +
+        sizeof(values) +
+        sizeof(count);
 };
 
 template <typename T>
 struct value_vector_storage {
     std::vector<T> values{};
     const inline uint32_t count() const { return static_cast<uint32_t>(values.size()); };
+
+    static constexpr const uint32_t packet_size =
+        sizeof(values);
 };
 
 //Avoid template specialization for bool to avoid potentially non-contiguous values.
@@ -24,6 +36,9 @@ struct value_vector_storage {
 template <>
 struct value_vector_storage<bool> {
     std::vector<uint8_t> values{};
+    
+    static constexpr const uint32_t packet_size =
+        sizeof(values);
 };
 
 template <typename T>
