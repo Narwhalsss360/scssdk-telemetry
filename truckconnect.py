@@ -291,6 +291,18 @@ class Telemetry:
         elif self.is_channel:
             return TelemetryType.Channel
 
+    def constant_size(self) -> bool:
+        if self.is_channel:
+            return True
+        if self.is_event_info:
+            return False
+        
+        for child in self.as_structure.children:
+            if not child.constant_size():
+                return False
+
+        return True
+
     @staticmethod
     def build(channels: list[Channel], events: list[Event]) -> list[Telemetry]:
         telemetries: list[Telemetry] = Telemetry._load_event_telemetries(events)
