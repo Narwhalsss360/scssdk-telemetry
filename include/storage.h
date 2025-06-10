@@ -3,27 +3,27 @@ struct scs_invalid_t;
 template <typename T>
 struct value_storage {
     bool initialized = false;
-    T value {};
+    T value{};
 };
 
 template <typename T, uint32_t max_count>
 struct value_array_storage {
     bool initialized = false;
-    std::array<T, max_count> values {};
+    std::array<T, max_count> values{};
     uint32_t count;
 };
 
 template <typename T>
 struct value_vector_storage {
-    std::vector<T> values {};
-    const inline uint32_t count() const { return static_cast<uint32_t>(values.size());  };
+    std::vector<T> values{};
+    const inline uint32_t count() const { return static_cast<uint32_t>(values.size()); };
 };
 
 //Avoid template specialization for bool to avoid potentially non-contiguous values.
 //(Does not necessarily store its elements as a contiguous array.)
 template <>
 struct value_vector_storage<bool> {
-    std::vector<uint8_t> values {};
+    std::vector<uint8_t> values{};
 };
 
 template <typename T>
@@ -115,5 +115,12 @@ static void append_bytes(const value_vector_storage<std::string>& storage, std::
         const uint32_t data_size = static_cast<uint32_t>(string.size() + 1);
         out.resize(out.size() + data_size);
         std::copy(string.c_str(), string.c_str() + data_size, out.end() - data_size);
+    }
+}
+
+template <typename T, uint32_t max_count>
+void append_bytes(const std::array<T, max_count>& array, std::vector<uint8_t>& out) {
+    for (uint32_t i = 0; i < max_count; i++) {
+        append_bytes(array[i], out);
     }
 }
