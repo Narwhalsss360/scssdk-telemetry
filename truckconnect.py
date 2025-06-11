@@ -869,7 +869,7 @@ def event_info_member_offset_of_function(
             f"{tabstr}{TAB_CHARS * 3}return\n"
         )
         for attribute in telemetry.as_event_info.attributes:
-            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.simple_name}") ? offsetof({name(telemetry)}::storage_type, {attribute.simple_name}) :\n'
+            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.expansion}") ? offsetof({name(telemetry)}::storage_type, {attribute.simple_name}) :\n'
         out += f"{tabstr}{TAB_CHARS * 4}INVALID_OFFSET;\n"
 
     out += (
@@ -895,7 +895,7 @@ def event_info_member_scs_type_id_function(
             f"{tabstr}{TAB_CHARS * 3}return\n"
         )
         for attribute in telemetry.as_event_info.attributes:
-            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.simple_name}") ? {TYPE_MACROS_BY_ID[attribute.scs_type_id]} :\n'
+            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.expansion}") ? {TYPE_MACROS_BY_ID[attribute.scs_type_id]} :\n'
         out += f"{tabstr}{TAB_CHARS * 4}SCS_VALUE_TYPE_INVALID;\n"
 
     out += (
