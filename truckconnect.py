@@ -777,13 +777,13 @@ def id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
         f"{tabstr}constexpr bool streq(char const* a, char const* b) {{\n"
         f"{tabstr}{TAB_CHARS}return *a == *b && (*a == '\\0' || streq(a + 1, b + 1));\n"
         f"{tabstr}}}\n\n"
-        f"{tabstr}constexpr const telemetry_id& id_of(const char* const macro) {{\n"
+        f"{tabstr}constexpr const telemetry_id& id_of(const char* const macro, const bool& is_event_info = false) {{\n"
         f"{tabstr}{TAB_CHARS}return\n"
     )
 
     for i, telemetry in enumerate(telemetries):
         if telemetry.is_channel and telemetry.as_channel.is_trailer_channel:
-            cmp_expr: str = f'{TAB_CHARS}streq(macro, "{name(telemetry)}") ||\n'
+            cmp_expr: str = f'{TAB_CHARS}!is_event_info && streq(macro, "{name(telemetry)}") ||\n'
             for j in range(SCS_TELEMETRY_trailers_count):
                 cmp_expr += (
                     f'{tabstr}{TAB_CHARS * 3}streq(macro, "{name(telemetry)}.{j}")'
@@ -791,7 +791,7 @@ def id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
                 if j != SCS_TELEMETRY_trailers_count - 1:
                     cmp_expr += " ||\n"
         else:
-            cmp_expr: str = f'streq(macro, "{name(telemetry)}")'
+            cmp_expr: str = f'{'' if telemetry.is_event_info else '!' }is_event_info && streq(macro, "{name(telemetry)}")'
             if not telemetry.is_structure:
                 cmp_expr += f" || streq(macro, {name(telemetry)}::macro)"
         out += f"{tabstr}{TAB_CHARS * 2}{cmp_expr} ? {name(telemetry)}::id :\n"
