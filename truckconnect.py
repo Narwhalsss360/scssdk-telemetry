@@ -510,8 +510,31 @@ def metadata_value_struct(namespace: str, tab_count: int) -> str:
     )
 
     out += (
+        f"{tabstr}struct event_info_member {{\n"
+        f"{tabstr}{TAB_CHARS}{TELEMETRY_ID_ENUM_TYPE_NAME} event_info_id;\n"
+        f"{tabstr}{TAB_CHARS}const char* const macro_identifier;\n"
+        f"{tabstr}{TAB_CHARS}const char* const macro;\n"
+        f"{tabstr}{TAB_CHARS}uint32_t structure_offset;\n"
+        f"{tabstr}{TAB_CHARS}scs_value_type_t scs_type_id;\n"
+        f"{tabstr}{TAB_CHARS}bool indexed;\n\n"
+        f"{tabstr}{TAB_CHARS}constexpr event_info_member(\n"
+        f"{tabstr}{TAB_CHARS * 2}{TELEMETRY_ID_ENUM_TYPE_NAME} event_info_id = {TELEMETRY_ID_ENUM_TYPE_NAME}::invalid,\n"
+        f"{tabstr}{TAB_CHARS * 2}const char* const macro_identifier = nullptr,\n"
+        f"{tabstr}{TAB_CHARS * 2}const char* const macro = nullptr,\n"
+        f"{tabstr}{TAB_CHARS * 2}uint32_t structure_offset = 0,\n"
+        f"{tabstr}{TAB_CHARS * 2}scs_value_type_t scs_type_id = SCS_VALUE_TYPE_INVALID,\n"
+        f"{tabstr}{TAB_CHARS * 2}bool indexed = false\n"
+        f"{tabstr}{TAB_CHARS}) :\n"
+        f"{tabstr}{TAB_CHARS * 2}event_info_id(event_info_id),\n"
+        f"{tabstr}{TAB_CHARS * 2}macro_identifier(macro_identifier),\n"
+        f"{tabstr}{TAB_CHARS * 2}macro(macro),\n"
+        f"{tabstr}{TAB_CHARS * 2}structure_offset(structure_offset),\n"
+        f"{tabstr}{TAB_CHARS * 2}scs_type_id(scs_type_id),\n"
+        f"{tabstr}{TAB_CHARS * 2}indexed(indexed) {{}}\n"
+        f"{tabstr}}};\n\n"
+        f"{tabstr}constexpr const event_info_member INVALID_EVENT_INFO_MEMBER = event_info_member();\n\n"
         f"{tabstr}struct metadata_value {{\n"
-        f"{tabstr}{TAB_CHARS}telemetry_id id;\n"
+        f"{tabstr}{TAB_CHARS}{TELEMETRY_ID_ENUM_TYPE_NAME} id;\n"
         f"{tabstr}{TAB_CHARS}telemetry_type telemetry_type;\n"
         f"{tabstr}{TAB_CHARS}uint32_t master_offset;\n"
         f"{tabstr}{TAB_CHARS}uint32_t structure_offset;\n"
@@ -524,31 +547,31 @@ def metadata_value_struct(namespace: str, tab_count: int) -> str:
         f"{tabstr}{TAB_CHARS}scs_value_type_t scs_type_id;\n"
         f"{tabstr}{TAB_CHARS}bool custom_channel;\n\n"
         f"{tabstr}{TAB_CHARS}constexpr metadata_value(\n"
-        f"{tabstr}{TAB_CHARS}telemetry_id id = telemetry_id::invalid,\n"
-        f"{tabstr}{TAB_CHARS}{namespace}::telemetry_type telemetry_type = ::metadata::telemetry_type::invalid,\n"
-        f"{tabstr}{TAB_CHARS}uint32_t master_offset = INVALID_OFFSET,\n"
-        f"{tabstr}{TAB_CHARS}uint32_t structure_offset = INVALID_OFFSET,\n"
-        f"{tabstr}{TAB_CHARS}uint32_t storage_size = INVALID_SIZE,\n"
-        f"{tabstr}{TAB_CHARS}const char* macro_identifier = nullptr,\n"
-        f"{tabstr}{TAB_CHARS}const char* macro = nullptr,\n"
-        f"{tabstr}{TAB_CHARS}bool indexed = false,\n"
-        f"{tabstr}{TAB_CHARS}uint32_t max_count = 1,\n"
-        f"{tabstr}{TAB_CHARS}bool trailer_channel = false,\n"
-        f"{tabstr}{TAB_CHARS}scs_value_type_t scs_type_id = SCS_VALUE_TYPE_INVALID,\n"
-        f"{tabstr}{TAB_CHARS}bool custom_channel = SCS_VALUE_TYPE_INVALID\n"
-        f"{tabstr}) :\n"
-        f"{tabstr}{TAB_CHARS}id(id),\n"
-        f"{tabstr}{TAB_CHARS}telemetry_type(telemetry_type),\n"
-        f"{tabstr}{TAB_CHARS}master_offset(master_offset),\n"
-        f"{tabstr}{TAB_CHARS}structure_offset(structure_offset),\n"
-        f"{tabstr}{TAB_CHARS}storage_size(storage_size),\n"
-        f"{tabstr}{TAB_CHARS}macro_identifier(macro_identifier),\n"
-        f"{tabstr}{TAB_CHARS}macro(macro),\n"
-        f"{tabstr}{TAB_CHARS}indexed(indexed),\n"
-        f"{tabstr}{TAB_CHARS}max_count(max_count),\n"
-        f"{tabstr}{TAB_CHARS}trailer_channel(trailer_channel),\n"
-        f"{tabstr}{TAB_CHARS}scs_type_id(scs_type_id),\n"
-        f"{tabstr}{TAB_CHARS}custom_channel(custom_channel) {{}}\n"
+        f"{tabstr}{TAB_CHARS * 2}telemetry_id id = telemetry_id::invalid,\n"
+        f"{tabstr}{TAB_CHARS * 2}{namespace}::telemetry_type telemetry_type = {namespace}::telemetry_type::invalid,\n"
+        f"{tabstr}{TAB_CHARS * 2}uint32_t master_offset = INVALID_OFFSET,\n"
+        f"{tabstr}{TAB_CHARS * 2}uint32_t structure_offset = INVALID_OFFSET,\n"
+        f"{tabstr}{TAB_CHARS * 2}uint32_t storage_size = INVALID_SIZE,\n"
+        f"{tabstr}{TAB_CHARS * 2}const char* macro_identifier = nullptr,\n"
+        f"{tabstr}{TAB_CHARS * 2}const char* macro = nullptr,\n"
+        f"{tabstr}{TAB_CHARS * 2}bool indexed = false,\n"
+        f"{tabstr}{TAB_CHARS * 2}uint32_t max_count = 1,\n"
+        f"{tabstr}{TAB_CHARS * 2}bool trailer_channel = false,\n"
+        f"{tabstr}{TAB_CHARS * 2}scs_value_type_t scs_type_id = SCS_VALUE_TYPE_INVALID,\n"
+        f"{tabstr}{TAB_CHARS * 2}bool custom_channel = SCS_VALUE_TYPE_INVALID\n"
+        f"{tabstr}{TAB_CHARS}) :\n"
+        f"{tabstr}{TAB_CHARS * 2}id(id),\n"
+        f"{tabstr}{TAB_CHARS * 2}telemetry_type(telemetry_type),\n"
+        f"{tabstr}{TAB_CHARS * 2}master_offset(master_offset),\n"
+        f"{tabstr}{TAB_CHARS * 2}structure_offset(structure_offset),\n"
+        f"{tabstr}{TAB_CHARS * 2}storage_size(storage_size),\n"
+        f"{tabstr}{TAB_CHARS * 2}macro_identifier(macro_identifier),\n"
+        f"{tabstr}{TAB_CHARS * 2}macro(macro),\n"
+        f"{tabstr}{TAB_CHARS * 2}indexed(indexed),\n"
+        f"{tabstr}{TAB_CHARS * 2}max_count(max_count),\n"
+        f"{tabstr}{TAB_CHARS * 2}trailer_channel(trailer_channel),\n"
+        f"{tabstr}{TAB_CHARS * 2}scs_type_id(scs_type_id),\n"
+        f"{tabstr}{TAB_CHARS * 2}custom_channel(custom_channel) {{}}\n"
         f"{tabstr}}};\n\n"
         f"{tabstr}constexpr const metadata_value INVALID_METADATA = metadata_value();\n\n"
     )
@@ -604,6 +627,16 @@ def telemetry_metadata_structs(
                 f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const metadata_value metadata_value = metadata_value(id, telemetry_type, master_offset, structure_offset, sizeof(storage_type), macro_identifier, macro);\n"
             )
+
+            out += f"{tabstr}{TAB_CHARS}static constexpr const event_info_member members[] = {{\n"
+            for i, attribute in enumerate(telemetry.as_event_info.attributes):
+                out += f"{tabstr}{TAB_CHARS * 2}event_info_member({telemetry.qualified_id}, \"{attribute.macro}\", \"{attribute.expansion}\", offsetof(storage_type, {name(attribute)}), {TYPE_MACROS_BY_ID[attribute.scs_type_id]}, {cpp_bool(attribute.indexed)})"
+                if i != len(telemetry.as_event_info.attributes) - 1:
+                    out += ","
+                out += "\n"
+            out += f"{tabstr}{TAB_CHARS}}};\n"
+            for i, attribute in enumerate(telemetry.as_event_info.attributes):
+                out += f"{tabstr}{TAB_CHARS}static constexpr const event_info_member& {name(attribute)}_member_info = members[{i}];\n"
         elif telemetry.is_channel:
             out += (
                 f"{tabstr}{TAB_CHARS}using storage_type = {type_name(telemetry)};\n"
@@ -947,6 +980,31 @@ def event_info_latest_offset(telemetries: list[Telemetry], tabcount: int = 0) ->
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+
+    return out
+
+
+def event_info_member_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const event_info_member& event_info_member_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const char* const member) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(filter(lambda t: t.is_event_info, telemetries)):
+        out += (
+            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}:\n"
+            f"{tabstr}{TAB_CHARS * 3}return\n"
+        )
+        for attribute in telemetry.as_event_info.attributes:
+            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.expansion}") ? {name(telemetry)}::{name(attribute)}_member_info :\n'
+        out += f"{tabstr}{TAB_CHARS * 4}INVALID_EVENT_INFO_MEMBER;\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return INVALID_EVENT_INFO_MEMBER;\n"
         f"{tabstr}{TAB_CHARS}}}\n"
         f"{tabstr}}}\n"
     )
@@ -1344,6 +1402,7 @@ def main() -> None:
         f.write(f"{event_info_member_scs_type_id_function(telemetries)}\n")
         f.write(f"{event_info_member_indexed_function(telemetries)}\n")
         f.write(f"{event_info_latest_offset(telemetries)}\n")
+        f.write(f"{event_info_member_function(telemetries)}\n")
         f.write(f"{is_custom_channel_function(telemetries)}\n")
         f.write(f"{metadata_value_of_function(telemetries)}\n")
         f.write(f"{id_name_function(telemetries)}\n")
