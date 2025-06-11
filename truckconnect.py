@@ -13,6 +13,7 @@ from scssdk_dataclasses import (
     SCS_TELEMETRY_trailers_count,
 )
 
+# region Constants
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
 TAB_CHARS: str = "\t"
 
@@ -33,8 +34,10 @@ VALUE_VECTOR_STORAGE_TYPE_NAME: str = "value_vector_storage"
 TELEMETRY_ID_ENUM_TYPE_NAME: str = "telemetry_id"
 TELEMETRY_ID_ENUM_BASE_TYPE: str = "uint8_t"
 STD_ARRAYS_ELEMS: str = "_Elems"
+# endregion
 
 
+# region Basic Utility
 def is_attribute(telemetry_or_attr: Telemetry | EventAttribute) -> bool:
     return isinstance(telemetry_or_attr, EventAttribute)
 
@@ -131,6 +134,10 @@ def offsetof(type_name: str, member: str) -> str:
     return f"offsetof({type_name}, {member})"
 
 
+# endregion
+
+
+# region Types
 class ChannelCategory(Enum):
     General = 0
     Truck = 1
@@ -296,7 +303,7 @@ class Telemetry:
             return True
         if self.is_event_info:
             return False
-        
+
         for child in self.as_structure.children:
             if not child.constant_size():
                 return False
@@ -390,6 +397,10 @@ class Telemetry:
         return channel_telemetries
 
 
+# endregion
+
+
+# region Important telemetry caching
 __master_telemetry__: Telemetry | None = None
 __trailer_structure_telemetry__: Telemetry | None = None
 __configuration_trailer_structure_telemetry__: Telemetry | None = None
@@ -424,6 +435,10 @@ def configuration_trailer_structure_telemetry() -> Telemetry:
     return __configuration_trailer_structure_telemetry__
 
 
+# endregion
+
+
+# region Types and Constants Generators
 def master_structure(master: Telemetry, tabcount: int = 0) -> str:
     def recurse(tabcount: str, telemetry: Telemetry | EventAttribute):
         tabstr: str = TAB_CHARS * tabcount
@@ -558,9 +573,7 @@ def telemetry_metadata_structs(
         )
 
         if telemetry == master_telemetry():
-            out += (
-                f"{tabstr}{TAB_CHARS}static constexpr const uint32_t master_offset = 0;\n"
-            )
+            out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t master_offset = 0;\n"
             out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = 0;\n"
         else:
             parents: list[Telemetry | str] = telemetry.parents[:-1][::-1]
@@ -619,6 +632,10 @@ def telemetry_metadata_structs(
     return out
 
 
+# endregion
+
+
+# region Function Generators
 def telemetry_type_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
@@ -1026,18 +1043,24 @@ def register_all_function(
 
 
 def append_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> str:
-    assert not isinstance(structure_telemetry, list), "wrong function, did you mean the plural one?"
-    assert structure_telemetry.is_structure or structure_telemetry.is_event_info, "Must be a structure or event info"
+    assert not isinstance(structure_telemetry, list), (
+        "wrong function, did you mean the plural one?"
+    )
+    assert structure_telemetry.is_structure or structure_telemetry.is_event_info, (
+        "Must be a structure or event info"
+    )
     tabstr: str = TAB_CHARS * tabcount
     qualified_type_name: str = qualify_type_name(structure_telemetry)
     out: str = f"{tabstr}void append_bytes(const {qualified_type_name}& {name(structure_telemetry)}, std::vector<uint8_t>& out) {{\n"
 
-    tabstr= TAB_CHARS * (tabcount + 1)
+    tabstr = TAB_CHARS * (tabcount + 1)
     if structure_telemetry.constant_size():
-        out += (
-            f"{tabstr}//reserve the packed size of the structure.\n"
-        )
-    for child in structure_telemetry.as_structure.children if structure_telemetry.is_structure else structure_telemetry.as_event_info.attributes:
+        out += f"{tabstr}//reserve the packed size of the structure.\n"
+    for child in (
+        structure_telemetry.as_structure.children
+        if structure_telemetry.is_structure
+        else structure_telemetry.as_event_info.attributes
+    ):
         path: str = f"{name(structure_telemetry)}.{name(child)}"
         out += f"{tabstr}append_bytes({path}, out);\n"
 
@@ -1045,9 +1068,15 @@ def append_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> 
     return out
 
 
-def from_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> tuple[tuple[str], str]:
-    assert not isinstance(structure_telemetry, list), "wrong function, did you mean the plural one?"
-    assert structure_telemetry.is_structure or structure_telemetry.is_event_info, "Must be a structure or event info"
+def from_bytes_function(
+    structure_telemetry: Telemetry, tabcount: int = 0
+) -> tuple[tuple[str], str]:
+    assert not isinstance(structure_telemetry, list), (
+        "wrong function, did you mean the plural one?"
+    )
+    assert structure_telemetry.is_structure or structure_telemetry.is_event_info, (
+        "Must be a structure or event info"
+    )
     tabstr: str = TAB_CHARS * tabcount
     qualified_type_name: str = qualify_type_name(structure_telemetry)
     declarations: list[str] = [
@@ -1057,19 +1086,21 @@ def from_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> tu
     out: str = f"{declarations[0]} {{\n"
     declarations[0] += ";"
 
-    tabstr= TAB_CHARS * (tabcount + 1)
+    tabstr = TAB_CHARS * (tabcount + 1)
     if structure_telemetry.constant_size():
-        out += (
-            f"{tabstr}//reserve the packed size of the structure.\n"
-        )
-    out += (
-        f"{tabstr}read = 0;\n"
-        f"{tabstr}uint32_t single_read = 0;\n"
-    )
+        out += f"{tabstr}//reserve the packed size of the structure.\n"
+    out += f"{tabstr}read = 0;\n{tabstr}uint32_t single_read = 0;\n"
 
-    for child in structure_telemetry.as_structure.children if structure_telemetry.is_structure else structure_telemetry.as_event_info.attributes:
+    for child in (
+        structure_telemetry.as_structure.children
+        if structure_telemetry.is_structure
+        else structure_telemetry.as_event_info.attributes
+    ):
         path: str = f"{name(structure_telemetry)}.{name(child)}"
-        if child == trailer_structure_telemetry() or child == configuration_trailer_structure_telemetry():
+        if (
+            child == trailer_structure_telemetry()
+            or child == configuration_trailer_structure_telemetry()
+        ):
             out += (
                 f"{tabstr}for (uint32_t i = 0; i < SCS_TELEMETRY_trailers_count; i++){{\n"
                 f"{tabstr}{TAB_CHARS}if (!from_bytes(as_bytes, {path}[i], offset + read, single_read)) return false;\n"
@@ -1082,22 +1113,22 @@ def from_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> tu
                 f"{tabstr}read += single_read;\n"
             )
 
-
-    out += (
-        f"{tabstr}return true;\n"
-        f"{TAB_CHARS * tabcount}}}\n"
-    )
+    out += f"{tabstr}return true;\n{TAB_CHARS * tabcount}}}\n"
     return tuple(declarations), out
 
 
-def append_bytes_functions(telemetries: list[Telemetry], tabcount: int = 0) -> tuple[str, str]:
+def append_bytes_functions(
+    telemetries: list[Telemetry], tabcount: int = 0
+) -> tuple[str, str]:
     implout: str = ""
-    dependency_sorted: list[Telemetry] = list(filter(lambda t: t.is_structure or t.is_event_info, telemetries[::-1]))
+    dependency_sorted: list[Telemetry] = list(
+        filter(lambda t: t.is_structure or t.is_event_info, telemetries[::-1])
+    )
     dependency_sorted.sort(key=lambda t: 3 if t == master_telemetry() else -t.rank)
     declarations: list[str] = []
     for structure in dependency_sorted:
         function: str = f"{append_bytes_function(structure, tabcount)}\n"
-        declarations.append(f"{function[:function.index(')') + 1]};")
+        declarations.append(f"{function[: function.index(')') + 1]};")
         implout += function
 
     declout: str = ""
@@ -1108,13 +1139,19 @@ def append_bytes_functions(telemetries: list[Telemetry], tabcount: int = 0) -> t
     return declout, implout
 
 
-def from_bytes_functions(telemetries: list[Telemetry], tabcount: int = 0) -> tuple[str. str]:
+def from_bytes_functions(
+    telemetries: list[Telemetry], tabcount: int = 0
+) -> tuple[str.str]:
     implout: str = ""
-    dependency_sorted: list[Telemetry] = list(filter(lambda t: t.is_structure or t.is_event_info, telemetries[::-1]))
+    dependency_sorted: list[Telemetry] = list(
+        filter(lambda t: t.is_structure or t.is_event_info, telemetries[::-1])
+    )
     dependency_sorted.sort(key=lambda t: 3 if t == master_telemetry() else -t.rank)
     declarations: list[str] = []
     for structure in dependency_sorted:
-        telemetry_declarations, implementation = from_bytes_function(structure, tabcount)
+        telemetry_declarations, implementation = from_bytes_function(
+            structure, tabcount
+        )
         declarations.extend(telemetry_declarations)
         implout += f"{implementation}\n"
 
@@ -1125,6 +1162,9 @@ def from_bytes_functions(telemetries: list[Telemetry], tabcount: int = 0) -> tup
             declout += "\n"
 
     return declout, implout
+
+
+# endregion
 
 
 PAUSED_CUSTOM_CHANNEL: Channel = Channel(
@@ -1180,12 +1220,18 @@ def main() -> None:
                 telemetries, "store", "store", "store", "store", "handle_event"
             )
         )
-    append_bytes_functions_decl, append_bytes_functions_impl = append_bytes_functions(telemetries)
-    from_bytes_functions_decl, from_bytes_functions_impl = from_bytes_functions(telemetries)
+    append_bytes_functions_decl, append_bytes_functions_impl = append_bytes_functions(
+        telemetries
+    )
+    from_bytes_functions_decl, from_bytes_functions_impl = from_bytes_functions(
+        telemetries
+    )
     with open(OUTPUT_FOLDER.joinpath("byte_converters.h"), "w", encoding="utf-8") as f:
         f.write(f"{append_bytes_functions_decl}\n")
         f.write(f"{from_bytes_functions_decl}\n")
-    with open(OUTPUT_FOLDER.joinpath("byte_converters.cpp"), "w", encoding="utf-8") as f:
+    with open(
+        OUTPUT_FOLDER.joinpath("byte_converters.cpp"), "w", encoding="utf-8"
+    ) as f:
         f.write(f"{append_bytes_functions_impl}\n")
         f.write(f"{from_bytes_functions_impl}\n")
 
