@@ -1042,7 +1042,11 @@ def register_all_function(
     return out
 
 
-def append_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> str:
+def append_bytes_function(
+    structure_telemetry: Telemetry,
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0,
+) -> str:
     assert not isinstance(structure_telemetry, list), (
         "wrong function, did you mean the plural one?"
     )
@@ -1051,7 +1055,11 @@ def append_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> 
     )
     tabstr: str = TAB_CHARS * tabcount
     qualified_type_name: str = qualify_type_name(structure_telemetry)
-    out: str = f"{tabstr}void append_bytes(const {qualified_type_name}& {name(structure_telemetry)}, std::vector<uint8_t>& out) {{\n"
+    out: str = (
+        f"{tabstr}void append_bytes(const {qualified_type_name}& {name(structure_telemetry)}, std::vector<uint8_t>& out) {{\n"
+        f"{tabstr}{TAB_CHARS}constexpr const uint32_t& packed_size = {qualify_name(metadata_namespace, 'packed_size_of')}({structure_telemetry.qualified_id});\n"
+        f"{tabstr}{TAB_CHARS}out.reserve(packed_size);\n"
+    )
 
     tabstr = TAB_CHARS * (tabcount + 1)
     if structure_telemetry.constant_size():
@@ -1069,7 +1077,9 @@ def append_bytes_function(structure_telemetry: Telemetry, tabcount: int = 0) -> 
 
 
 def from_bytes_function(
-    structure_telemetry: Telemetry, tabcount: int = 0
+    structure_telemetry: Telemetry,
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0,
 ) -> tuple[tuple[str], str]:
     assert not isinstance(structure_telemetry, list), (
         "wrong function, did you mean the plural one?"
@@ -1087,9 +1097,12 @@ def from_bytes_function(
     declarations[0] += ";"
 
     tabstr = TAB_CHARS * (tabcount + 1)
-    if structure_telemetry.constant_size():
-        out += f"{tabstr}//reserve the packed size of the structure.\n"
-    out += f"{tabstr}read = 0;\n{tabstr}uint32_t single_read = 0;\n"
+    out += (
+        f"{tabstr}constexpr const uint32_t& packed_size = {metadata_namespace}::packed_size_of({structure_telemetry.qualified_id});\n"
+        f"{tabstr}if (as_bytes.size() - offset < {metadata_namespace}::packed_size_of({structure_telemetry.qualified_id})) return false;\n"
+        f"{tabstr}read = 0;\n"
+        f"{tabstr}uint32_t single_read = 0;\n"
+    )
 
     for child in (
         structure_telemetry.as_structure.children
@@ -1118,7 +1131,9 @@ def from_bytes_function(
 
 
 def append_bytes_functions(
-    telemetries: list[Telemetry], tabcount: int = 0
+    telemetries: list[Telemetry],
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0,
 ) -> tuple[str, str]:
     implout: str = ""
     dependency_sorted: list[Telemetry] = list(
@@ -1127,7 +1142,9 @@ def append_bytes_functions(
     dependency_sorted.sort(key=lambda t: 3 if t == master_telemetry() else -t.rank)
     declarations: list[str] = []
     for structure in dependency_sorted:
-        function: str = f"{append_bytes_function(structure, tabcount)}\n"
+        function: str = (
+            f"{append_bytes_function(structure, metadata_namespace, tabcount)}\n"
+        )
         declarations.append(f"{function[: function.index(')') + 1]};")
         implout += function
 
@@ -1140,7 +1157,9 @@ def append_bytes_functions(
 
 
 def from_bytes_functions(
-    telemetries: list[Telemetry], tabcount: int = 0
+    telemetries: list[Telemetry],
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0,
 ) -> tuple[str.str]:
     implout: str = ""
     dependency_sorted: list[Telemetry] = list(
@@ -1150,7 +1169,7 @@ def from_bytes_functions(
     declarations: list[str] = []
     for structure in dependency_sorted:
         telemetry_declarations, implementation = from_bytes_function(
-            structure, tabcount
+            structure, metadata_namespace, tabcount
         )
         declarations.extend(telemetry_declarations)
         implout += f"{implementation}\n"
@@ -1162,6 +1181,70 @@ def from_bytes_functions(
             declout += "\n"
 
     return declout, implout
+
+
+def packed_size_of_constant(
+    telemetry: Telemetry, metadata_namespace: str = "metadata", tabcout: int = 0
+) -> str:
+    assert telemetry.is_structure or telemetry.is_event_info, (
+        "Only structures and event info require this function"
+    )
+    tabstr: str = TAB_CHARS * tabcout
+    out: str = f"{tabstr}constexpr const uint32_t packed_size_of_{name(telemetry)} = \n"
+    tabstr: str = TAB_CHARS * (tabcout + 1)
+    if telemetry.is_structure:
+        for i, child in enumerate(telemetry.as_structure.children):
+            if child.is_channel:
+                out += f"{tabstr}{metadata_namespace}::{name(child)}::storage_type::serialization_info::packed_size"
+            else:
+                out += f"{tabstr}packed_size_of_{name(child)}"
+            if i == len(telemetry.as_structure.children) - 1:
+                out += ";\n"
+            else:
+                out += " +\n"
+    else:
+        for i, attribute in enumerate(telemetry.as_event_info.attributes):
+            out += f"{tabstr}{storage(attribute)[0]}::serialization_info::packed_size"
+            if i == len(telemetry.as_event_info.attributes) - 1:
+                out += ";\n"
+            else:
+                out += " +\n"
+
+    return out
+
+
+def packed_size_of_function(
+    telemetries: list[Telemetry],
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0,
+) -> str:
+    out: str = ""
+    dependency_sorted: list[Telemetry] = list(
+        filter(lambda t: t.is_structure or t.is_event_info, telemetries[::-1])
+    )
+    dependency_sorted.sort(key=lambda t: 3 if t == master_telemetry() else -t.rank)
+    for telemetry in dependency_sorted:
+        out += f"{packed_size_of_constant(telemetry, metadata_namespace, tabcount)}\n"
+
+    tabstr: str = TAB_CHARS * tabcount
+    out += (
+        f"{tabstr}constexpr const uint32_t& packed_size_of(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        if telemetry.is_channel:
+            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {metadata_namespace}::{name(telemetry)}::storage_type::serialization_info::packed_size;\n"
+        else:
+            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return packed_size_of_{name(telemetry)};\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+
+    return out
 
 
 # endregion
@@ -1220,6 +1303,10 @@ def main() -> None:
                 telemetries, "store", "store", "store", "store", "handle_event"
             )
         )
+    with open(
+        OUTPUT_FOLDER.joinpath("packed_size_of_constants.h"), "w", encoding="utf-8"
+    ) as f:
+        f.write(packed_size_of_function(telemetries))
     append_bytes_functions_decl, append_bytes_functions_impl = append_bytes_functions(
         telemetries
     )
