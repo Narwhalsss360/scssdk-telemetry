@@ -695,12 +695,10 @@ def master_offset_of_function(telemetries: list[Telemetry], tabcount: int = 0) -
     )
 
     for i, telemetry in enumerate(telemetries):
-        if (
-            telemetry.is_channel and telemetry.as_channel.is_trailer_channel
-        ) or telemetry == trailer_structure_telemetry():
-            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof({qualify_type_name(telemetry.parent_structure)}) * trailer_index : INVALID_OFFSET;\n"
-        elif telemetry == configuration_trailer_structure_telemetry():
-            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index <= SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof({qualify_type_name(telemetry.parent_structure)}) * trailer_index : INVALID_OFFSET;\n"
+        if telemetry.is_channel and telemetry.as_channel.is_trailer_channel:
+            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index < SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof({qualify_type_name(telemetry.parent_structure)}) * trailer_index : INVALID_OFFSET;\n"
+        elif telemetry in (configuration_trailer_structure_telemetry(), trailer_structure_telemetry()):
+            out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return 0 <= trailer_index && trailer_index < SCS_TELEMETRY_trailers_count ? {name(telemetry)}::master_offset + sizeof({qualify_type_name(telemetry)}) * trailer_index : INVALID_OFFSET;\n"
         else:
             out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {name(telemetry)}::master_offset;\n"
 
