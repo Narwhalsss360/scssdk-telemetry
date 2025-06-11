@@ -906,6 +906,33 @@ def event_info_member_scs_type_id_function(
     return out
 
 
+def event_info_member_indexed_function(
+    telemetries: list[Telemetry], tabcount: int = 0
+) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}constexpr const bool event_info_member_indexed(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const char* const member) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(filter(lambda t: t.is_event_info, telemetries)):
+        out += (
+            f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}:\n"
+            f"{tabstr}{TAB_CHARS * 3}return\n"
+        )
+        for attribute in telemetry.as_event_info.attributes:
+            if attribute.indexed:
+                out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.expansion}") ? true :\n'
+        out += f"{tabstr}{TAB_CHARS * 4}false;\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return false;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 def is_custom_channel_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
@@ -1294,6 +1321,7 @@ def main() -> None:
         f.write(f"{offset_of_latest_function(telemetries)}\n")
         f.write(f"{event_info_member_offset_of_function(telemetries)}\n")
         f.write(f"{event_info_member_scs_type_id_function(telemetries)}\n")
+        f.write(f"{event_info_member_indexed_function(telemetries)}\n")
         f.write(f"{is_custom_channel_function(telemetries)}\n")
         f.write(f"{metadata_value_of_function(telemetries)}\n")
         f.write(f"{id_name_function(telemetries)}\n")
