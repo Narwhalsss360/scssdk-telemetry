@@ -480,9 +480,21 @@ struct value_vector_storage<bool> {
         return true;
     }
 };
+#pragma endregion
+
+#pragma region append/from bytes overloads
+template <typename T>
+void append_bytes(const value_storage<T>& value, std::vector<uint8_t>& out) {
+    value.append_bytes(out);
+}
+
+template <typename T, uint32_t max_count>
+void append_bytes(const value_array_storage<T, max_count>& value, std::vector<uint8_t>& out) {
+    value.append_bytes(out);
+}
 
 template <typename T>
-void append_bytes(const T& value, std::vector<uint32_t>& out) {
+void append_bytes(const value_vector_storage<T>& value, std::vector<uint8_t>& out) {
     value.append_bytes(out);
 }
 
@@ -492,3 +504,61 @@ void append_bytes(const std::array<T, max_count>& array, std::vector<uint8_t>& o
         append_bytes(array[i], out);
     }
 }
+
+template <typename T>
+bool from_bytes(const std::vector<uint8_t>& bytes, value_storage<T>& out, uint32_t offset, uint32_t& read) {
+    return out.from_bytes(bytes, offset, read);
+}
+
+template <typename T>
+bool from_bytes(const std::vector<uint8_t>& bytes, value_storage<T>& out, uint32_t offset = 0) {
+    uint32_t read;
+    return out.from_bytes(bytes, offset, read);
+}
+
+template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, value_array_storage<T, max_count>& out, uint32_t offset, uint32_t& read) {
+    return out.from_bytes(bytes, offset, read);
+}
+
+template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, value_array_storage<T, max_count>& out, uint32_t offset = 0) {
+    uint32_t read;
+    return out.from_bytes(bytes, offset, read);
+}
+
+template <typename T>
+bool from_bytes(const std::vector<uint8_t>& bytes, value_vector_storage<T>& out, uint32_t offset, uint32_t& read) {
+    return out.from_bytes(bytes, offset, read);
+}
+
+template <typename T>
+bool from_bytes(const std::vector<uint8_t>& bytes, value_vector_storage<T>& out, uint32_t offset = 0) {
+    uint32_t read;
+    return out.from_bytes(bytes, offset, read);
+}
+
+template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& out, uint32_t offset, uint32_t& read, uint32_t& count) {
+    for (uint32_t i = 0; i < max_count; i++) {
+        uint32_t iread;
+        if (!from_bytes(bytes, out[i], offset + read, iread)) {
+            return false;
+        }
+        count++;
+        read += iread;
+    }
+    return true;
+}
+
+template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& out, uint32_t offset) {
+    uint32_t read, count;
+    return from_bytes(bytes, out, offset, read, count);
+}
+template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& out) {
+    uint32_t read, count;
+    return from_bytes(bytes, out, 0, read, count);
+}
+#pragma endregion
