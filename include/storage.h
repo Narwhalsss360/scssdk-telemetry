@@ -15,6 +15,7 @@
 #define ifconstexpr
 #endif
 
+#pragma region constant expression utility
 template <typename T, uint32_t count>
 constexpr const T sum(const T(&array)[count], const uint32_t& end = count, const uint32_t& start = 0) {
     return start >= end || start >= count ? 0 : array[start] + sum(array, end, start + 1);
@@ -33,7 +34,9 @@ template <typename TR = int, typename T1 = TR, typename T2>
 constexpr const TR cieldiv(const T1& numerator, const T2& denominator) {
     return (numerator + denominator - 1) / denominator;
 }
+#pragma endregion
 
+#pragma region storage types
 struct scs_invalid_t;
 
 template <typename T>
@@ -93,9 +96,10 @@ struct value_storage {
         append_bytes(out, i + 1);
     }
 
-    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset = 0, const uint32_t& i = 0) {
+    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
         constexpr const uint32_t (&ordered_sizes)[serialization_info::count] = serialization_info::ordered_sizes;
         if ifconstexpr (i >= serialization_info::count) {
+            read = packed_size();
             return true;
         } else if ifconstexpr (i == 0) {
             if (bytes.size() - offset < packed_size()) {
@@ -104,12 +108,12 @@ struct value_storage {
         }
 
         std::copy(
-            bytes.cbegin() + sum(ordered_sizes, i),
-            bytes.cbegin() + sum(ordered_sizes, i + 1),
+            bytes.cbegin() + offset + sum(ordered_sizes, i),
+            bytes.cbegin() + offset + sum(ordered_sizes, i + 1),
             ordered_offset(i)
         );
 
-        return from_bytes(bytes, offset, i + 1);
+        return from_bytes(bytes, offset, read, i + 1);
     }
 };
 
@@ -139,7 +143,7 @@ struct value_storage<std::string> {
         std::copy(value.c_str(), value.c_str() + count, out.end() - count);
     }
 
-    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset = 0) {
+    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
         if (bytes.size() - offset < packed_size()) {
             return false;
         }
@@ -158,8 +162,8 @@ struct value_storage<std::string> {
         const uint8_t* const& bytes_start = &bytes[0];
         initialized = *reinterpret_cast<const bool*>(bytes_start);
         value.resize(end - sizeof(initialized) - offset + 1);
-        std::copy(bytes.cbegin() + offset + sizeof(initialized), bytes.cbegin() + value.size(), value.begin());
-
+        std::copy(bytes.cbegin() + offset + sizeof(initialized), bytes.cbegin() + offset + sizeof(initialized) + value.size(), value.begin());
+        read = sizeof(initialized) + end - offset;
         return true;
     }
 };
@@ -224,9 +228,10 @@ struct value_array_storage {
         append_bytes(out, i + 1);
     }
 
-    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset = 0, const uint32_t& i = 0) {
+    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
         constexpr const uint32_t (&ordered_sizes)[serialization_info::count] = serialization_info::ordered_sizes;
         if ifconstexpr (i >= serialization_info::count) {
+            read = packed_size();
             return true;
         } else if ifconstexpr (i == 0) {
             if (bytes.size() - offset < packed_size()) {
@@ -235,12 +240,12 @@ struct value_array_storage {
         }
 
         std::copy(
-            bytes.cbegin() + sum(ordered_sizes, i),
-            bytes.cbegin() + sum(ordered_sizes, i + 1),
+            bytes.cbegin() + offset + sum(ordered_sizes, i),
+            bytes.cbegin() + offset + sum(ordered_sizes, i + 1),
             ordered_offset(i)
         );
 
-        return from_bytes(bytes, offset, i + 1);
+        return from_bytes(bytes, offset, read, i + 1);
     }
 };
 
@@ -277,7 +282,7 @@ struct value_array_storage<std::string, max_count> {
         }
     }
 
-    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset = 0) {
+    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
         if (bytes.size() - offset < packed_size()) {
             return false;
         }
@@ -291,16 +296,20 @@ struct value_array_storage<std::string, max_count> {
             return false;
         }
 
-        const uint8_t* const& end = &bytes[bytes.size() - 1];
+        read = 0;
+        const uint8_t* const& back = &bytes.back();
         const uint8_t* str_start = bytes_start + sizeof(initialized) + sizeof(count);
         for (uint32_t i = 0; i < count; i++) {
-            if (str_start >= end) {
+            if (str_start > back) {
                 return false;
             }
             values[i] = std::string(reinterpret_cast<const char* const>(str_start));
-            str_start += values[i].size() + 1;
+            const uint32_t szlength = static_cast<uint32_t>(values[i].size() + 1);
+            str_start += szlength;
+            read += szlength;
         }
-
+        
+        read += sizeof(initialized) + sizeof(count);
         this->initialized = initialized;
         this->count = count;
         return true;
@@ -328,16 +337,19 @@ struct value_vector_storage {
     void append_bytes(std::vector<uint8_t>& out) const {
         const uint32_t lcount = count();
         const uint8_t* const& count_start = reinterpret_cast<const uint8_t* const>(&lcount);
-        const uint8_t* const& data_start = reinterpret_cast<const uint8_t* const>(&*values.cbegin());
-
+        
         const uint32_t size = lcount * sizeof(T);
         out.resize(out.size() + sizeof(lcount) + size);
-
+        
         std::copy(count_start, count_start + sizeof(lcount), out.end() - size - sizeof(lcount));
-        std::copy(data_start, data_start + size, out.end() - size);
+
+        if (size != 0) {
+            const uint8_t* const& data_start = reinterpret_cast<const uint8_t* const>(&*values.cbegin());
+            std::copy(data_start, data_start + size, out.end() - size);
+        }
     }
 
-    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset = 0) {
+    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
         if (bytes.size() - offset < packed_size()) {
             return false;
         }
@@ -353,6 +365,7 @@ struct value_vector_storage {
 
         values.resize(count);
         std::copy(data_start, data_start + count, values.begin());
+        read = sizeof(count) + count * sizeof(T);
         return true;
     }
 };
@@ -386,7 +399,7 @@ struct value_vector_storage<std::string> {
         }
     }
 
-    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset = 0) {
+    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
         if (bytes.size() - offset < packed_size()) {
             return false;
         }
@@ -394,18 +407,22 @@ struct value_vector_storage<std::string> {
         const uint8_t* const bytes_start = &bytes[offset];
         const uint32_t& count = *reinterpret_cast<const uint32_t* const>(bytes_start);
 
-        const uint8_t* const& end = &bytes[bytes.size() - 1];
+        const uint8_t* const& back = &bytes.back();
         const uint8_t* str_start = bytes_start + sizeof(count);
         values.clear();
         values.reserve(count);
+        read = 0;
         for (uint32_t i = 0; i < count; i++) {
-            if (str_start >= end) {
+            if (str_start > back) {
                 return false;
             }
             values.resize(values.size() + 1);
             values.back() = std::string(reinterpret_cast<const char* const>(str_start));
-            str_start += values[i].size() + 1;
+            const uint32_t szlength = static_cast<uint32_t>(values[i].size() + 1);
+            str_start += szlength;
+            read += szlength;
         }
+        read += sizeof(count);
 
         return true;
     }
@@ -454,7 +471,7 @@ struct value_vector_storage<bool> {
         }
     }
 
-    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset = 0) {
+    bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
         if (bytes.size() - offset < packed_size()) {
             return false;
         }
@@ -466,6 +483,7 @@ struct value_vector_storage<bool> {
             return false;
         }
 
+        read = sizeof(count) + bool_int_count;
         values.clear();
         values.resize(count);
 
