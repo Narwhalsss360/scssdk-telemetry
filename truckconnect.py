@@ -1252,6 +1252,22 @@ def append_bytes_functions(
         declarations.append(f"{function[: function.index(')') + 1]};")
         implout += function
 
+    tabstr: str = TAB_CHARS * tabcount
+    declarations.append(f"bool append_bytes(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const void* const data, std::vector<uint8_t>& out);")
+    implout += (
+        f"{tabstr}bool append_bytes(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const void* const data, std::vector<uint8_t>& out) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        implout += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: append_bytes(*reinterpret_cast<const {metadata_namespace}::{name(telemetry)}::storage_type* const>(data), out); return true;\n"
+
+    implout += (
+        f"{tabstr}{TAB_CHARS * 2}default: return false;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+
     declout: str = ""
     for i, declaration in enumerate(declarations):
         declout += f"{declaration}\n"
