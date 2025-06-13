@@ -1289,6 +1289,22 @@ def from_bytes_functions(
         declarations.extend(telemetry_declarations)
         implout += f"{implementation}\n"
 
+    tabstr: str = TAB_CHARS * tabcount
+    declarations.append(f"bool from_bytes(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const std::vector<uint8_t>& as_bytes, void* const out, const uint32_t& offset, uint32_t& read);")
+    implout += (
+        f"{tabstr}bool from_bytes(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id, const std::vector<uint8_t>&as_bytes, void* const out,  const uint32_t& offset,uint32_t& read) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        implout += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return from_bytes(as_bytes, *reinterpret_cast<{metadata_namespace}::{name(telemetry)}::storage_type* const>(out), offset, read);\n"
+
+    implout += (
+        f"{tabstr}{TAB_CHARS * 2}default: read = 0; return false;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+
     declout: str = ""
     for i, declaration in enumerate(declarations):
         declout += f"{declaration}\n"
