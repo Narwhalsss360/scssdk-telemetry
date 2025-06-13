@@ -517,6 +517,13 @@ void append_bytes(const value_vector_storage<T>& value, std::vector<uint8_t>& ou
 }
 
 template <typename T, uint32_t max_count>
+void append_bytes(const T (&array)[max_count], std::vector<uint8_t>* out) {
+    for (uint32_t i = 0; i < max_count; i++) {
+        append_bytes(array[i], out);
+    }
+}
+
+template <typename T, uint32_t max_count>
 void append_bytes(const std::array<T, max_count>& array, std::vector<uint8_t>& out) {
     for (uint32_t i = 0; i < max_count; i++) {
         append_bytes(array[i], out);
@@ -557,9 +564,11 @@ bool from_bytes(const std::vector<uint8_t>& bytes, value_vector_storage<T>& out,
 }
 
 template <typename T, uint32_t max_count>
-bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& out, uint32_t offset, uint32_t& read, uint32_t& count) {
+bool from_bytes(const std::vector<uint8_t>& bytes, T (&out)[max_count], uint32_t offset, uint32_t& read, uint32_t& count) {
+    count = 0;
+    read = 0;
     for (uint32_t i = 0; i < max_count; i++) {
-        uint32_t iread;
+        uint32_t iread = 0;
         if (!from_bytes(bytes, out[i], offset + read, iread)) {
             return false;
         }
@@ -570,13 +579,30 @@ bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& out
 }
 
 template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, T (&out)[max_count], uint32_t offset) {
+    uint32_t read, count;
+    return from_bytes(bytes, out, offset, read, count);
+}
+
+template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, T (&out)[max_count]) {
+    return from_bytes(bytes, out, 0);
+}
+
+template <typename T, uint32_t max_count>
+bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& array, uint32_t offset, uint32_t& read, uint32_t& count) {
+    return from_bytes(bytes, *reinterpret_cast<T (* const)[max_count]>(array.data()), offset, read, count);
+}
+
+template <typename T, uint32_t max_count>
 bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& out, uint32_t offset) {
     uint32_t read, count;
     return from_bytes(bytes, out, offset, read, count);
 }
+
 template <typename T, uint32_t max_count>
 bool from_bytes(const std::vector<uint8_t>& bytes, std::array<T, max_count>& out) {
     uint32_t read, count;
-    return from_bytes(bytes, out, 0, read, count);
+    return from_bytes(bytes, out, 0);
 }
 #pragma endregion
