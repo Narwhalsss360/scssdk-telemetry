@@ -162,7 +162,7 @@ class TelemetryType(Enum):
     Structure = "structure"
     EventInfo = "event_info"
     Channel = "channel"
-    Invalid = "invalid = static_cast<telemetry_type>(-1)"
+    Invalid = "invalid = static_cast<uint8_t>(-1)"
 
     def cpp_value(self) -> str:
         match self:
