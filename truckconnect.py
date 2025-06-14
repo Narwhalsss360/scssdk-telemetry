@@ -1157,7 +1157,9 @@ def append_bytes_function(
     out: str = (
         f"{tabstr}void append_bytes(const {qualified_type_name}& {name(structure_telemetry)}, std::vector<uint8_t>& out) {{\n"
         f"{tabstr}{TAB_CHARS}constexpr const uint32_t& packed_size = {qualify_name(metadata_namespace, 'packed_size_of')}({structure_telemetry.qualified_id});\n"
-        f"{tabstr}{TAB_CHARS}out.reserve(packed_size);\n"
+        f"{tabstr}{TAB_CHARS}if (out.capacity() - out.size() < packed_size) {{\n"
+        f"{tabstr}{TAB_CHARS * 2}out.reserve(packed_size);\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
     )
 
     tabstr = TAB_CHARS * (tabcount + 1)
@@ -1258,7 +1260,7 @@ def append_bytes_functions(
         implout += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: append_bytes(*reinterpret_cast<const {metadata_namespace}::{name(telemetry)}::storage_type* const>(data), out); return true;\n"
 
     implout += (
-        f"{tabstr}{TAB_CHARS * 2}default: return LIFETIME_FALSE;\n"
+        f"{tabstr}{TAB_CHARS * 2}default: return false;\n"
         f"{tabstr}{TAB_CHARS}}}\n"
         f"{tabstr}}}\n"
     )
