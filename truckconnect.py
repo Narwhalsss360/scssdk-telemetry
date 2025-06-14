@@ -821,7 +821,7 @@ def id_of_function(telemetries: list[Telemetry], tabcount: int = 0) -> str:
         f"{tabstr}constexpr bool streq(char const* a, char const* b) {{\n"
         f"{tabstr}{TAB_CHARS}return *a == *b && (*a == '\\0' || streq(a + 1, b + 1));\n"
         f"{tabstr}}}\n\n"
-        f"{tabstr}constexpr const telemetry_id& id_of(const char* const macro, const bool& is_event_info = false) {{\n"
+        f"{tabstr}constexpr const {TELEMETRY_ID_ENUM_TYPE_NAME}& id_of(const char* const macro, const bool& is_event_info = false) {{\n"
         f"{tabstr}{TAB_CHARS}return\n"
     )
 
