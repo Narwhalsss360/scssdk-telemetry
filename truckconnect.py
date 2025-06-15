@@ -504,7 +504,7 @@ def metadata_value_struct(namespace: str, tab_count: int) -> str:
     out: str = (
         f"{TelemetryType.cpp(tab_count)}\n"
         f"{tabstr}constexpr const uint32_t& INVALID_OFFSET = static_cast<uint32_t>(-1);\n\n"
-        f"{tabstr}constexpr const uint32_t& INVALID_TRAILER_INDEX = static_cast<uint32_t>(-1);\n\n"
+        f"{tabstr}constexpr const trailer_index_uint& INVALID_TRAILER_INDEX = static_cast<trailer_index_uint>(-1);\n\n"
         f"{tabstr}constexpr const uint32_t& INVALID_SIZE = 0;\n\n"
         f"{tabstr}constexpr const uint32_t& DEFAULT_MAX_COUNT = 0;\n\n"
         f"{tabstr}constexpr const {TELEMETRY_ID_ENUM_TYPE_NAME}& LIFETIME_INVALID_ID = {TELEMETRY_ID_ENUM_TYPE_NAME}::invalid;\n\n"
@@ -1216,7 +1216,7 @@ def from_bytes_function(
             or child == configuration_trailer_structure_telemetry()
         ):
             out += (
-                f"{tabstr}for (uint32_t i = 0; i < SCS_TELEMETRY_trailers_count; i++){{\n"
+                f"{tabstr}for (trailer_index_uint i = 0; i < SCS_TELEMETRY_trailers_count; i++){{\n"
                 f"{tabstr}{TAB_CHARS}if (!from_bytes(as_bytes, {path}[i], offset + read, single_read)) return false;\n"
                 f"{tabstr}{TAB_CHARS}read += single_read;\n"
                 f"{tabstr}}}\n"
