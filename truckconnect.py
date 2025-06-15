@@ -1380,6 +1380,36 @@ def packed_size_of_function(
     return out
 
 
+def is_constant_size_function(
+    telemetries: list[Telemetry],
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0,
+) -> str:
+    out: str = ""
+    dependency_sorted: list[Telemetry] = list(
+        filter(lambda t: t.is_structure or t.is_event_info, telemetries[::-1])
+    )
+    dependency_sorted.sort(key=lambda t: 3 if t == master_telemetry() else -t.rank)
+    for telemetry in dependency_sorted:
+        out += f"{packed_size_of_constant(telemetry, metadata_namespace, tabcount)}\n"
+
+    tabstr: str = TAB_CHARS * tabcount
+    out += (
+        f"{tabstr}constexpr const bool& is_constant_size(const {TELEMETRY_ID_ENUM_TYPE_NAME}& id) {{\n"
+        f"{tabstr}{TAB_CHARS}switch (id) {{\n"
+    )
+
+    for i, telemetry in enumerate(telemetries):
+        out += f"{tabstr}{TAB_CHARS * 2}case {telemetry.qualified_id}: return {metadata_namespace}::{name(telemetry)}::constant_size;\n"
+
+    out += (
+        f"{tabstr}{TAB_CHARS * 2}default: return LIFETIME_FALSE;\n"
+        f"{tabstr}{TAB_CHARS}}}\n"
+        f"{tabstr}}}\n"
+    )
+
+    return out
+
 # endregion
 
 
@@ -1432,6 +1462,7 @@ def main() -> None:
         f.write(f"{event_info_member_function(telemetries)}\n")
         f.write(f"{is_custom_channel_function(telemetries)}\n")
         f.write(f"{metadata_value_of_function(telemetries)}\n")
+        f.write(f"{is_constant_size_function(telemetries)}\n")
     with open(OUTPUT_FOLDER.joinpath("register_all.cpp"), "w", encoding="utf-8") as f:
         f.write(
             register_all_function(
