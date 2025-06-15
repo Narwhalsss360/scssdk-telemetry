@@ -1410,6 +1410,26 @@ def is_constant_size_function(
 
     return out
 
+
+def storage_type_of_template(
+    telemetries: list[Telemetry],
+    metadata_namespace: str = "metadata",
+    tabcount: int = 0
+) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}template <telemetry_id id>\nstruct storage_type_of;\n\n"
+    )
+
+    for telemetry in telemetries:
+        out += (
+            f"template<>\n"
+            f"struct storage_type_of<{telemetry.qualified_id}> : {qualify_name(metadata_namespace, name(telemetry), "storage_type")} {{}};\n\n"
+        )
+
+    return out
+
+
 # endregion
 
 
@@ -1463,6 +1483,10 @@ def main() -> None:
         f.write(f"{is_custom_channel_function(telemetries)}\n")
         f.write(f"{metadata_value_of_function(telemetries)}\n")
         f.write(f"{is_constant_size_function(telemetries)}\n")
+    with open(
+        OUTPUT_FOLDER.joinpath("storage_type_of.h"), "w", encoding="utf-8"
+    ) as f:
+        f.write(storage_type_of_template(telemetries))
     with open(OUTPUT_FOLDER.joinpath("register_all.cpp"), "w", encoding="utf-8") as f:
         f.write(
             register_all_function(
