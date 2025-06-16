@@ -300,7 +300,7 @@ class Telemetry:
 
     def constant_size(self) -> bool:
         if self.is_channel:
-            return True
+            return self.as_channel.scs_type != "string"
         if self.is_event_info:
             return False
 
@@ -1430,6 +1430,53 @@ def storage_type_of_template(
     return out
 
 
+def memory_usage_function(tabcount: int = 0) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}const uint32_t memory_usage(const {type_name(master_telemetry())}& master) {{\n"
+        f"{tabstr}{TAB_CHARS}uint32_t usage = 0;\n"
+    )
+
+    def recurse(telemetry: Telemetry, parent_names: list[str]) -> None:
+        nonlocal out
+        if telemetry.constant_size():
+            out += f"{tabstr}{TAB_CHARS}usage += sizeof({type_name(telemetry)});\n"
+            return
+        dotted_parents: str = "".join(f"{name}." for name in parent_names)
+        if telemetry.is_event_info:
+            for attribute in telemetry.as_event_info.attributes:
+                if telemetry == configuration_trailer_structure_telemetry():
+                    continue
+                dotted = f"{dotted_parents}{name(attribute)}"
+                out += f"{tabstr}{TAB_CHARS}usage += sizeof({type_name(attribute)});\n"
+                if attribute.indexed:
+                    if attribute.type == "string":
+                        out += (
+                            f"{tabstr}{TAB_CHARS}for (uint32_t i = 0; i < {dotted}.values.size(); i++) {{\n"
+                            f"{tabstr}{TAB_CHARS * 2}usage += static_cast<uint32_t>({dotted}.values[i].size() + 1);\n"
+                            f"{tabstr}{TAB_CHARS}}}\n"
+                        )
+                    else:
+                        out += f"{tabstr}{TAB_CHARS}usage += static_cast<uint32_t>({dotted}.values.size() * sizeof({attribute.primitive_type}));\n"
+                elif attribute.type == "string":
+                    out += f"{tabstr}{TAB_CHARS}usage += static_cast<uint32_t>({dotted}.value.size() + 1);\n"
+        else:
+            for child in telemetry.as_structure.children:
+                dotted = f"{dotted_parents}{name(child)}"
+                if child.constant_size():
+                    out += f"{tabstr}{TAB_CHARS}usage += sizeof({qualify_type_name(child)});\n"
+                else:
+                    recurse(child, parent_names + [name(child)])
+                    out += "\n"
+
+    recurse(master_telemetry(), ["master"])
+    out += (
+        f"{tabstr}{TAB_CHARS}return usage;\n"
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 # endregion
 
 
@@ -1493,6 +1540,8 @@ def main() -> None:
                 telemetries, "store", "store", "store", "store", "handle_event"
             )
         )
+    with open(OUTPUT_FOLDER.joinpath("memory_usage.cpp"), "w", encoding="utf-8") as f:
+        f.write(memory_usage_function())
     with open(
         OUTPUT_FOLDER.joinpath("packed_size_of_constants.h"), "w", encoding="utf-8"
     ) as f:
@@ -1516,3 +1565,4 @@ def main() -> None:
 if __name__ == "__main__":
     if retval := main():
         print(retval)
+
