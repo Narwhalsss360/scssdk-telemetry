@@ -15,6 +15,7 @@ from scssdk_dataclasses import (
 import json
 
 # region Constants
+TRUCKCONNECT_TELEMETRY_FILE: str = "truckconnect_telemetry.json"
 TELEMETRY_EVENTS: str = [
     "SCS_TELEMETRY_EVENT_configuration",
     "SCS_TELEMETRY_EVENT_gameplay",
@@ -512,6 +513,8 @@ def build_telemetries() -> list[Telemetry]:
 def main() -> None:
     telemetries: list[Telemetry] = build_telemetries()
     print(f"Built {len(telemetries)} telemetries.")
+    with open(TRUCKCONNECT_TELEMETRY_FILE, "w", encoding="utf-8") as f:
+        f.write(json.dumps(master_telemetry(), indent=4, cls=TelemetryJSONEncoder))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,2352 @@
+{
+    "id": 0,
+    "telemetry_type": "Structure",
+    "constant_size": false,
+    "identifier": "master",
+    "children": [
+        {
+            "id": 1,
+            "telemetry_type": "Structure",
+            "constant_size": false,
+            "identifier": "configuration",
+            "event": {
+                "macro": "SCS_TELEMETRY_EVENT_configuration",
+                "expansion": "5",
+                "simple_name": "configuration"
+            },
+            "children": [
+                {
+                    "id": 7,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "configuration_substances_info",
+                    "macro": "SCS_TELEMETRY_CONFIG_substances",
+                    "expansion": "substances",
+                    "simple_name": "substances",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_id",
+                            "expansion": "id",
+                            "simple_name": "id",
+                            "type": "string",
+                            "indexed": true
+                        }
+                    ]
+                },
+                {
+                    "id": 8,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "configuration_controls_info",
+                    "macro": "SCS_TELEMETRY_CONFIG_controls",
+                    "expansion": "controls",
+                    "simple_name": "controls",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_shifter_type",
+                            "expansion": "shifter.type",
+                            "simple_name": "shifter_type",
+                            "type": "string",
+                            "indexed": false
+                        }
+                    ]
+                },
+                {
+                    "id": 9,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "configuration_hshifter_info",
+                    "macro": "SCS_TELEMETRY_CONFIG_hshifter",
+                    "expansion": "hshifter",
+                    "simple_name": "hshifter",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_selector_count",
+                            "expansion": "selector.count",
+                            "simple_name": "selector_count",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_slot_gear",
+                            "expansion": "slot.gear",
+                            "simple_name": "slot_gear",
+                            "type": "s32",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_slot_handle_position",
+                            "expansion": "slot.handle.position",
+                            "simple_name": "slot_handle_position",
+                            "type": "u32",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_slot_selectors",
+                            "expansion": "slot.selectors",
+                            "simple_name": "slot_selectors",
+                            "type": "u32",
+                            "indexed": true
+                        }
+                    ]
+                },
+                {
+                    "id": 10,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "configuration_truck_info",
+                    "macro": "SCS_TELEMETRY_CONFIG_truck",
+                    "expansion": "truck",
+                    "simple_name": "truck",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand_id",
+                            "expansion": "brand_id",
+                            "simple_name": "brand_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand",
+                            "expansion": "brand",
+                            "simple_name": "brand",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_id",
+                            "expansion": "id",
+                            "simple_name": "id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_name",
+                            "expansion": "name",
+                            "simple_name": "name",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_fuel_capacity",
+                            "expansion": "fuel.capacity",
+                            "simple_name": "fuel_capacity",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_fuel_warning_factor",
+                            "expansion": "fuel.warning.factor",
+                            "simple_name": "fuel_warning_factor",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_adblue_capacity",
+                            "expansion": "adblue.capacity",
+                            "simple_name": "adblue_capacity",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_adblue_warning_factor",
+                            "expansion": "adblue.warning.factor",
+                            "simple_name": "adblue_warning_factor",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_air_pressure_warning",
+                            "expansion": "brake.air.pressure.warning",
+                            "simple_name": "air_pressure_warning",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_air_pressure_emergency",
+                            "expansion": "brake.air.pressure.emergency",
+                            "simple_name": "air_pressure_emergency",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_oil_pressure_warning",
+                            "expansion": "oil.pressure.warning",
+                            "simple_name": "oil_pressure_warning",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_water_temperature_warning",
+                            "expansion": "water.temperature.warning",
+                            "simple_name": "water_temperature_warning",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_battery_voltage_warning",
+                            "expansion": "battery.voltage.warning",
+                            "simple_name": "battery_voltage_warning",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_rpm_limit",
+                            "expansion": "rpm.limit",
+                            "simple_name": "rpm_limit",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_forward_gear_count",
+                            "expansion": "gears.forward",
+                            "simple_name": "forward_gear_count",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_reverse_gear_count",
+                            "expansion": "gears.reverse",
+                            "simple_name": "reverse_gear_count",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_differential_ratio",
+                            "expansion": "differential.ratio",
+                            "simple_name": "differential_ratio",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_retarder_step_count",
+                            "expansion": "retarder.steps",
+                            "simple_name": "retarder_step_count",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cabin_position",
+                            "expansion": "cabin.position",
+                            "simple_name": "cabin_position",
+                            "type": "fvector",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_forward_ratio",
+                            "expansion": "forward.ratio",
+                            "simple_name": "forward_ratio",
+                            "type": "float",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_reverse_ratio",
+                            "expansion": "reverse.ratio",
+                            "simple_name": "reverse_ratio",
+                            "type": "float",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_head_position",
+                            "expansion": "head.position",
+                            "simple_name": "head_position",
+                            "type": "fvector",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_hook_position",
+                            "expansion": "hook.position",
+                            "simple_name": "hook_position",
+                            "type": "fvector",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_license_plate",
+                            "expansion": "license.plate",
+                            "simple_name": "license_plate",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_license_plate_country",
+                            "expansion": "license.plate.country",
+                            "simple_name": "license_plate_country",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_license_plate_country_id",
+                            "expansion": "license.plate.country.id",
+                            "simple_name": "license_plate_country_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_count",
+                            "expansion": "wheels.count",
+                            "simple_name": "wheel_count",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_position",
+                            "expansion": "wheel.position",
+                            "simple_name": "wheel_position",
+                            "type": "fvector",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_steerable",
+                            "expansion": "wheel.steerable",
+                            "simple_name": "wheel_steerable",
+                            "type": "bool",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_simulated",
+                            "expansion": "wheel.simulated",
+                            "simple_name": "wheel_simulated",
+                            "type": "bool",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_radius",
+                            "expansion": "wheel.radius",
+                            "simple_name": "wheel_radius",
+                            "type": "float",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_powered",
+                            "expansion": "wheel.powered",
+                            "simple_name": "wheel_powered",
+                            "type": "bool",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_liftable",
+                            "expansion": "wheel.liftable",
+                            "simple_name": "wheel_liftable",
+                            "type": "bool",
+                            "indexed": true
+                        }
+                    ]
+                },
+                {
+                    "id": 11,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "configuration_trailer_info",
+                    "macro": "SCS_TELEMETRY_CONFIG_trailer",
+                    "expansion": "trailer",
+                    "simple_name": "trailer",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_id",
+                            "expansion": "id",
+                            "simple_name": "id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_accessory_id",
+                            "expansion": "cargo.accessory.id",
+                            "simple_name": "cargo_accessory_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_hook_position",
+                            "expansion": "hook.position",
+                            "simple_name": "hook_position",
+                            "type": "fvector",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand_id",
+                            "expansion": "brand_id",
+                            "simple_name": "brand_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand",
+                            "expansion": "brand",
+                            "simple_name": "brand",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_name",
+                            "expansion": "name",
+                            "simple_name": "name",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_chain_type",
+                            "expansion": "chain.type",
+                            "simple_name": "chain_type",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_body_type",
+                            "expansion": "body.type",
+                            "simple_name": "body_type",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_license_plate",
+                            "expansion": "license.plate",
+                            "simple_name": "license_plate",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_license_plate_country",
+                            "expansion": "license.plate.country",
+                            "simple_name": "license_plate_country",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_license_plate_country_id",
+                            "expansion": "license.plate.country.id",
+                            "simple_name": "license_plate_country_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_count",
+                            "expansion": "wheels.count",
+                            "simple_name": "wheel_count",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_position",
+                            "expansion": "wheel.position",
+                            "simple_name": "wheel_position",
+                            "type": "fvector",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_steerable",
+                            "expansion": "wheel.steerable",
+                            "simple_name": "wheel_steerable",
+                            "type": "bool",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_simulated",
+                            "expansion": "wheel.simulated",
+                            "simple_name": "wheel_simulated",
+                            "type": "bool",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_radius",
+                            "expansion": "wheel.radius",
+                            "simple_name": "wheel_radius",
+                            "type": "float",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_powered",
+                            "expansion": "wheel.powered",
+                            "simple_name": "wheel_powered",
+                            "type": "bool",
+                            "indexed": true
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_liftable",
+                            "expansion": "wheel.liftable",
+                            "simple_name": "wheel_liftable",
+                            "type": "bool",
+                            "indexed": true
+                        }
+                    ]
+                },
+                {
+                    "id": 12,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "configuration_job_info",
+                    "macro": "SCS_TELEMETRY_CONFIG_job",
+                    "expansion": "job",
+                    "simple_name": "job",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_id",
+                            "expansion": "cargo.id",
+                            "simple_name": "cargo_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo",
+                            "expansion": "cargo",
+                            "simple_name": "cargo",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_mass",
+                            "expansion": "cargo.mass",
+                            "simple_name": "cargo_mass",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city_id",
+                            "expansion": "destination.city.id",
+                            "simple_name": "destination_city_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_unit_mass",
+                            "expansion": "cargo.unit.mass",
+                            "simple_name": "cargo_unit_mass",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_unit_count",
+                            "expansion": "cargo.unit.count",
+                            "simple_name": "cargo_unit_count",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city",
+                            "expansion": "destination.city",
+                            "simple_name": "destination_city",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city_id",
+                            "expansion": "source.city.id",
+                            "simple_name": "source_city_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city",
+                            "expansion": "source.city",
+                            "simple_name": "source_city",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company_id",
+                            "expansion": "destination.company.id",
+                            "simple_name": "destination_company_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company",
+                            "expansion": "destination.company",
+                            "simple_name": "destination_company",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company_id",
+                            "expansion": "source.company.id",
+                            "simple_name": "source_company_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company",
+                            "expansion": "source.company",
+                            "simple_name": "source_company",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_income",
+                            "expansion": "income",
+                            "simple_name": "income",
+                            "type": "u64",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_delivery_time",
+                            "expansion": "delivery.time",
+                            "simple_name": "delivery_time",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_is_cargo_loaded",
+                            "expansion": "cargo.loaded",
+                            "simple_name": "is_cargo_loaded",
+                            "type": "bool",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_job_market",
+                            "expansion": "job.market",
+                            "simple_name": "job_market",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_special_job",
+                            "expansion": "is.special.job",
+                            "simple_name": "special_job",
+                            "type": "bool",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_planned_distance_km",
+                            "expansion": "planned_distance.km",
+                            "simple_name": "planned_distance_km",
+                            "type": "u32",
+                            "indexed": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "telemetry_type": "Structure",
+            "constant_size": false,
+            "identifier": "gameplay",
+            "event": {
+                "macro": "SCS_TELEMETRY_EVENT_gameplay",
+                "expansion": "6",
+                "simple_name": "gameplay"
+            },
+            "children": [
+                {
+                    "id": 13,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "gameplay_job_cancelled_info",
+                    "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled",
+                    "expansion": "job.cancelled",
+                    "simple_name": "job_cancelled",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cancel_penalty",
+                            "expansion": "cancel.penalty",
+                            "simple_name": "cancel_penalty",
+                            "type": "s64",
+                            "indexed": false
+                        }
+                    ]
+                },
+                {
+                    "id": 14,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "gameplay_job_delivered_info",
+                    "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered",
+                    "expansion": "job.delivered",
+                    "simple_name": "job_delivered",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_revenue",
+                            "expansion": "revenue",
+                            "simple_name": "revenue",
+                            "type": "s64",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_earned_xp",
+                            "expansion": "earned.xp",
+                            "simple_name": "earned_xp",
+                            "type": "s32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cargo_damage",
+                            "expansion": "cargo.damage",
+                            "simple_name": "cargo_damage",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_distance_km",
+                            "expansion": "distance.km",
+                            "simple_name": "distance_km",
+                            "type": "float",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_CONFIG_ATTRIBUTE_delivery_time",
+                            "expansion": "delivery.time",
+                            "simple_name": "delivery_time",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_park_used",
+                            "expansion": "auto.park.used",
+                            "simple_name": "auto_park_used",
+                            "type": "bool",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_load_used",
+                            "expansion": "auto.load.used",
+                            "simple_name": "auto_load_used",
+                            "type": "bool",
+                            "indexed": false
+                        }
+                    ]
+                },
+                {
+                    "id": 15,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "gameplay_player_fined_info",
+                    "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined",
+                    "expansion": "player.fined",
+                    "simple_name": "player_fined",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_offence",
+                            "expansion": "fine.offence",
+                            "simple_name": "fine_offence",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_amount",
+                            "expansion": "fine.amount",
+                            "simple_name": "fine_amount",
+                            "type": "s64",
+                            "indexed": false
+                        }
+                    ]
+                },
+                {
+                    "id": 16,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "gameplay_player_tollgate_paid_info",
+                    "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_player_tollgate_paid",
+                    "expansion": "player.tollgate.paid",
+                    "simple_name": "player_tollgate_paid",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount",
+                            "expansion": "pay.amount",
+                            "simple_name": "pay_amount",
+                            "type": "s64",
+                            "indexed": false
+                        }
+                    ]
+                },
+                {
+                    "id": 17,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "gameplay_player_use_ferry_info",
+                    "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_ferry",
+                    "expansion": "player.use.ferry",
+                    "simple_name": "player_use_ferry",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount",
+                            "expansion": "pay.amount",
+                            "simple_name": "pay_amount",
+                            "type": "s64",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_name",
+                            "expansion": "source.name",
+                            "simple_name": "source_name",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_name",
+                            "expansion": "target.name",
+                            "simple_name": "target_name",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_id",
+                            "expansion": "source.id",
+                            "simple_name": "source_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_id",
+                            "expansion": "target.id",
+                            "simple_name": "target_id",
+                            "type": "string",
+                            "indexed": false
+                        }
+                    ]
+                },
+                {
+                    "id": 18,
+                    "telemetry_type": "EventInfo",
+                    "constant_size": false,
+                    "identifier": "gameplay_player_use_train_info",
+                    "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_player_use_train",
+                    "expansion": "player.use.train",
+                    "simple_name": "player_use_train",
+                    "attributes": [
+                        {
+                            "macro": "",
+                            "expansion": "latest",
+                            "simple_name": "latest",
+                            "type": "u32",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_pay_amount",
+                            "expansion": "pay.amount",
+                            "simple_name": "pay_amount",
+                            "type": "s64",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_name",
+                            "expansion": "source.name",
+                            "simple_name": "source_name",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_name",
+                            "expansion": "target.name",
+                            "simple_name": "target_name",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_source_id",
+                            "expansion": "source.id",
+                            "simple_name": "source_id",
+                            "type": "string",
+                            "indexed": false
+                        },
+                        {
+                            "macro": "SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_target_id",
+                            "expansion": "target.id",
+                            "simple_name": "target_id",
+                            "type": "string",
+                            "indexed": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "telemetry_type": "Structure",
+            "constant_size": true,
+            "identifier": "channels",
+            "children": [
+                {
+                    "id": 4,
+                    "telemetry_type": "Structure",
+                    "constant_size": true,
+                    "identifier": "general",
+                    "children": [
+                        {
+                            "id": 19,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "channel_paused",
+                            "macro": "channel_paused",
+                            "expansion": "",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "channel_paused",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 20,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "channel_local_scale",
+                            "macro": "SCS_TELEMETRY_CHANNEL_local_scale",
+                            "expansion": "local.scale",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "channel_local_scale",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 21,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "channel_game_time",
+                            "macro": "SCS_TELEMETRY_CHANNEL_game_time",
+                            "expansion": "game.time",
+                            "type": "u32",
+                            "indexed": false,
+                            "simple_name": "channel_game_time",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 22,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "channel_multiplayer_time_offset",
+                            "macro": "SCS_TELEMETRY_CHANNEL_multiplayer_time_offset",
+                            "expansion": "multiplayer.time.offset",
+                            "type": "s32",
+                            "indexed": false,
+                            "simple_name": "channel_multiplayer_time_offset",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 23,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "channel_next_rest_stop",
+                            "macro": "SCS_TELEMETRY_CHANNEL_next_rest_stop",
+                            "expansion": "rest.stop",
+                            "type": "s32",
+                            "indexed": false,
+                            "simple_name": "channel_next_rest_stop",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 24,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "job_channel_cargo_damage",
+                            "macro": "SCS_TELEMETRY_JOB_CHANNEL_cargo_damage",
+                            "expansion": "job.cargo.damage",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "job_channel_cargo_damage",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        }
+                    ]
+                },
+                {
+                    "id": 5,
+                    "telemetry_type": "Structure",
+                    "constant_size": true,
+                    "identifier": "truck",
+                    "children": [
+                        {
+                            "id": 43,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_world_placement",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_world_placement",
+                            "expansion": "truck.world.placement",
+                            "type": "dplacement",
+                            "indexed": false,
+                            "simple_name": "truck_channel_world_placement",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 44,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_local_linear_velocity",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_local_linear_velocity",
+                            "expansion": "truck.local.velocity.linear",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "truck_channel_local_linear_velocity",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 45,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_local_angular_velocity",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_local_angular_velocity",
+                            "expansion": "truck.local.velocity.angular",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "truck_channel_local_angular_velocity",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 46,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_local_linear_acceleration",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_local_linear_acceleration",
+                            "expansion": "truck.local.acceleration.linear",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "truck_channel_local_linear_acceleration",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 47,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_local_angular_acceleration",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_local_angular_acceleration",
+                            "expansion": "truck.local.acceleration.angular",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "truck_channel_local_angular_acceleration",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 48,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_cabin_offset",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_cabin_offset",
+                            "expansion": "truck.cabin.offset",
+                            "type": "fplacement",
+                            "indexed": false,
+                            "simple_name": "truck_channel_cabin_offset",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 49,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_cabin_angular_velocity",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_cabin_angular_velocity",
+                            "expansion": "truck.cabin.velocity.angular",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "truck_channel_cabin_angular_velocity",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 50,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_cabin_angular_acceleration",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_cabin_angular_acceleration",
+                            "expansion": "truck.cabin.acceleration.angular",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "truck_channel_cabin_angular_acceleration",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 51,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_head_offset",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_head_offset",
+                            "expansion": "truck.head.offset",
+                            "type": "fplacement",
+                            "indexed": false,
+                            "simple_name": "truck_channel_head_offset",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 52,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_speed",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_speed",
+                            "expansion": "truck.speed",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_speed",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 53,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_engine_rpm",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_engine_rpm",
+                            "expansion": "truck.engine.rpm",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_engine_rpm",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 54,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_engine_gear",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_engine_gear",
+                            "expansion": "truck.engine.gear",
+                            "type": "s32",
+                            "indexed": false,
+                            "simple_name": "truck_channel_engine_gear",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 55,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_displayed_gear",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_displayed_gear",
+                            "expansion": "truck.displayed.gear",
+                            "type": "s32",
+                            "indexed": false,
+                            "simple_name": "truck_channel_displayed_gear",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 56,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_input_steering",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_input_steering",
+                            "expansion": "truck.input.steering",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_input_steering",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 57,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_input_throttle",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_input_throttle",
+                            "expansion": "truck.input.throttle",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_input_throttle",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 58,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_input_brake",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_input_brake",
+                            "expansion": "truck.input.brake",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_input_brake",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 59,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_input_clutch",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_input_clutch",
+                            "expansion": "truck.input.clutch",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_input_clutch",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 60,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_effective_steering",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_effective_steering",
+                            "expansion": "truck.effective.steering",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_effective_steering",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 61,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_effective_throttle",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_effective_throttle",
+                            "expansion": "truck.effective.throttle",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_effective_throttle",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 62,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_effective_brake",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_effective_brake",
+                            "expansion": "truck.effective.brake",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_effective_brake",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 63,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_effective_clutch",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_effective_clutch",
+                            "expansion": "truck.effective.clutch",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_effective_clutch",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 64,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_cruise_control",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_cruise_control",
+                            "expansion": "truck.cruise_control",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_cruise_control",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 65,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_hshifter_slot",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_hshifter_slot",
+                            "expansion": "truck.hshifter.slot",
+                            "type": "u32",
+                            "indexed": false,
+                            "simple_name": "truck_channel_hshifter_slot",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 66,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_hshifter_selector",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_hshifter_selector",
+                            "expansion": "truck.hshifter.select",
+                            "type": "bool",
+                            "indexed": true,
+                            "simple_name": "truck_channel_hshifter_selector",
+                            "is_trailer_channel": false,
+                            "max_count": 2
+                        },
+                        {
+                            "id": 67,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_parking_brake",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_parking_brake",
+                            "expansion": "truck.brake.parking",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_parking_brake",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 68,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_motor_brake",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_motor_brake",
+                            "expansion": "truck.brake.motor",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_motor_brake",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 69,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_retarder_level",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_retarder_level",
+                            "expansion": "truck.brake.retarder",
+                            "type": "u32",
+                            "indexed": false,
+                            "simple_name": "truck_channel_retarder_level",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 70,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_brake_air_pressure",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_brake_air_pressure",
+                            "expansion": "truck.brake.air.pressure",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_brake_air_pressure",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 71,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_brake_air_pressure_warning",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_brake_air_pressure_warning",
+                            "expansion": "truck.brake.air.pressure.warning",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_brake_air_pressure_warning",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 72,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_brake_air_pressure_emergency",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_brake_air_pressure_emergency",
+                            "expansion": "truck.brake.air.pressure.emergency",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_brake_air_pressure_emergency",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 73,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_brake_temperature",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_brake_temperature",
+                            "expansion": "truck.brake.temperature",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_brake_temperature",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 74,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_fuel",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_fuel",
+                            "expansion": "truck.fuel.amount",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_fuel",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 75,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_fuel_warning",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_fuel_warning",
+                            "expansion": "truck.fuel.warning",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_fuel_warning",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 76,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_fuel_average_consumption",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_fuel_average_consumption",
+                            "expansion": "truck.fuel.consumption.average",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_fuel_average_consumption",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 77,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_fuel_range",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_fuel_range",
+                            "expansion": "truck.fuel.range",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_fuel_range",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 78,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_adblue",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_adblue",
+                            "expansion": "truck.adblue",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_adblue",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 79,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_adblue_warning",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_adblue_warning",
+                            "expansion": "truck.adblue.warning",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_adblue_warning",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 80,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_oil_pressure",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_oil_pressure",
+                            "expansion": "truck.oil.pressure",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_oil_pressure",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 81,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_oil_pressure_warning",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_oil_pressure_warning",
+                            "expansion": "truck.oil.pressure.warning",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_oil_pressure_warning",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 82,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_oil_temperature",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_oil_temperature",
+                            "expansion": "truck.oil.temperature",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_oil_temperature",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 83,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_water_temperature",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_water_temperature",
+                            "expansion": "truck.water.temperature",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_water_temperature",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 84,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_water_temperature_warning",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_water_temperature_warning",
+                            "expansion": "truck.water.temperature.warning",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_water_temperature_warning",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 85,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_battery_voltage",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_battery_voltage",
+                            "expansion": "truck.battery.voltage",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_battery_voltage",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 86,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_battery_voltage_warning",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_battery_voltage_warning",
+                            "expansion": "truck.battery.voltage.warning",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_battery_voltage_warning",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 87,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_electric_enabled",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_electric_enabled",
+                            "expansion": "truck.electric.enabled",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_electric_enabled",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 88,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_engine_enabled",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_engine_enabled",
+                            "expansion": "truck.engine.enabled",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_engine_enabled",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 89,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_lblinker",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_lblinker",
+                            "expansion": "truck.lblinker",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_lblinker",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 90,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_rblinker",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_rblinker",
+                            "expansion": "truck.rblinker",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_rblinker",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 91,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_hazard_warning",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_hazard_warning",
+                            "expansion": "truck.hazard.warning",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_hazard_warning",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 92,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_lblinker",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_lblinker",
+                            "expansion": "truck.light.lblinker",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_lblinker",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 93,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_rblinker",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_rblinker",
+                            "expansion": "truck.light.rblinker",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_rblinker",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 94,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_parking",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_parking",
+                            "expansion": "truck.light.parking",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_parking",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 95,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_low_beam",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_low_beam",
+                            "expansion": "truck.light.beam.low",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_low_beam",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 96,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_high_beam",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_high_beam",
+                            "expansion": "truck.light.beam.high",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_high_beam",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 97,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_aux_front",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_aux_front",
+                            "expansion": "truck.light.aux.front",
+                            "type": "u32",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_aux_front",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 98,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_aux_roof",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_aux_roof",
+                            "expansion": "truck.light.aux.roof",
+                            "type": "u32",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_aux_roof",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 99,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_beacon",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_beacon",
+                            "expansion": "truck.light.beacon",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_beacon",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 100,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_brake",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_brake",
+                            "expansion": "truck.light.brake",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_brake",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 101,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_light_reverse",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_light_reverse",
+                            "expansion": "truck.light.reverse",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_light_reverse",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 102,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wipers",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wipers",
+                            "expansion": "truck.wipers",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_wipers",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 103,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_dashboard_backlight",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_dashboard_backlight",
+                            "expansion": "truck.dashboard.backlight",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_dashboard_backlight",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 104,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_differential_lock",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_differential_lock",
+                            "expansion": "truck.differential_lock",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_differential_lock",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 105,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_lift_axle",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_lift_axle",
+                            "expansion": "truck.lift_axle",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_lift_axle",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 106,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_lift_axle_indicator",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_lift_axle_indicator",
+                            "expansion": "truck.lift_axle.indicator",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_lift_axle_indicator",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 107,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_trailer_lift_axle",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_trailer_lift_axle",
+                            "expansion": "truck.trailer.lift_axle",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_trailer_lift_axle",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 108,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_trailer_lift_axle_indicator",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_trailer_lift_axle_indicator",
+                            "expansion": "truck.trailer.lift_axle.indicator",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "truck_channel_trailer_lift_axle_indicator",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 109,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wear_engine",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wear_engine",
+                            "expansion": "truck.wear.engine",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_wear_engine",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 110,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wear_transmission",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wear_transmission",
+                            "expansion": "truck.wear.transmission",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_wear_transmission",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 111,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wear_cabin",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wear_cabin",
+                            "expansion": "truck.wear.cabin",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_wear_cabin",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 112,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wear_chassis",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wear_chassis",
+                            "expansion": "truck.wear.chassis",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_wear_chassis",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 113,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wear_wheels",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wear_wheels",
+                            "expansion": "truck.wear.wheels",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_wear_wheels",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 114,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_odometer",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_odometer",
+                            "expansion": "truck.odometer",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_odometer",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 115,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_navigation_distance",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_navigation_distance",
+                            "expansion": "truck.navigation.distance",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_navigation_distance",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 116,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_navigation_time",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_navigation_time",
+                            "expansion": "truck.navigation.time",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_navigation_time",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 117,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_navigation_speed_limit",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_navigation_speed_limit",
+                            "expansion": "truck.navigation.speed.limit",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "truck_channel_navigation_speed_limit",
+                            "is_trailer_channel": false,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 118,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_susp_deflection",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_susp_deflection",
+                            "expansion": "truck.wheel.suspension.deflection",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_susp_deflection",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        },
+                        {
+                            "id": 119,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_on_ground",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_on_ground",
+                            "expansion": "truck.wheel.on_ground",
+                            "type": "bool",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_on_ground",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        },
+                        {
+                            "id": 120,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_substance",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_substance",
+                            "expansion": "truck.wheel.substance",
+                            "type": "u32",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_substance",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        },
+                        {
+                            "id": 121,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_velocity",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_velocity",
+                            "expansion": "truck.wheel.angular_velocity",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_velocity",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        },
+                        {
+                            "id": 122,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_steering",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_steering",
+                            "expansion": "truck.wheel.steering",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_steering",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        },
+                        {
+                            "id": 123,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_rotation",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_rotation",
+                            "expansion": "truck.wheel.rotation",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_rotation",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        },
+                        {
+                            "id": 124,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_lift",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_lift",
+                            "expansion": "truck.wheel.lift",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_lift",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        },
+                        {
+                            "id": 125,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "truck_channel_wheel_lift_offset",
+                            "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_wheel_lift_offset",
+                            "expansion": "truck.wheel.lift.offset",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "truck_channel_wheel_lift_offset",
+                            "is_trailer_channel": false,
+                            "max_count": 14
+                        }
+                    ]
+                },
+                {
+                    "id": 6,
+                    "telemetry_type": "Structure",
+                    "constant_size": true,
+                    "identifier": "trailer",
+                    "children": [
+                        {
+                            "id": 25,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_connected",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_connected",
+                            "expansion": "trailer.connected",
+                            "type": "bool",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_connected",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 26,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_cargo_damage",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_cargo_damage",
+                            "expansion": "trailer.cargo.damage",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_cargo_damage",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 27,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_world_placement",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_world_placement",
+                            "expansion": "trailer.world.placement",
+                            "type": "dplacement",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_world_placement",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 28,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_local_linear_velocity",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_local_linear_velocity",
+                            "expansion": "trailer.velocity.linear",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_local_linear_velocity",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 29,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_local_angular_velocity",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_local_angular_velocity",
+                            "expansion": "trailer.velocity.angular",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_local_angular_velocity",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 30,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_local_linear_acceleration",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_local_linear_acceleration",
+                            "expansion": "trailer.acceleration.linear",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_local_linear_acceleration",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 31,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_local_angular_acceleration",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_local_angular_acceleration",
+                            "expansion": "trailer.acceleration.angular",
+                            "type": "fvector",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_local_angular_acceleration",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 32,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wear_body",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wear_body",
+                            "expansion": "trailer.wear.body",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_wear_body",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 33,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wear_chassis",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wear_chassis",
+                            "expansion": "trailer.wear.chassis",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_wear_chassis",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 34,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wear_wheels",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wear_wheels",
+                            "expansion": "trailer.wear.wheels",
+                            "type": "float",
+                            "indexed": false,
+                            "simple_name": "trailer_channel_wear_wheels",
+                            "is_trailer_channel": true,
+                            "max_count": 1
+                        },
+                        {
+                            "id": 35,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_susp_deflection",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_susp_deflection",
+                            "expansion": "trailer.wheel.suspension.deflection",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_susp_deflection",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        },
+                        {
+                            "id": 36,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_on_ground",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_on_ground",
+                            "expansion": "trailer.wheel.on_ground",
+                            "type": "bool",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_on_ground",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        },
+                        {
+                            "id": 37,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_substance",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_substance",
+                            "expansion": "trailer.wheel.substance",
+                            "type": "u32",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_substance",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        },
+                        {
+                            "id": 38,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_velocity",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_velocity",
+                            "expansion": "trailer.wheel.angular_velocity",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_velocity",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        },
+                        {
+                            "id": 39,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_steering",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_steering",
+                            "expansion": "trailer.wheel.steering",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_steering",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        },
+                        {
+                            "id": 40,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_rotation",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_rotation",
+                            "expansion": "trailer.wheel.rotation",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_rotation",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        },
+                        {
+                            "id": 41,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_lift",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_lift",
+                            "expansion": "trailer.wheel.lift",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_lift",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        },
+                        {
+                            "id": 42,
+                            "telemetry_type": "Channel",
+                            "constant_size": true,
+                            "identifier": "trailer_channel_wheel_lift_offset",
+                            "macro": "SCS_TELEMETRY_TRAILER_CHANNEL_wheel_lift_offset",
+                            "expansion": "trailer.wheel.lift.offset",
+                            "type": "float",
+                            "indexed": true,
+                            "simple_name": "trailer_channel_wheel_lift_offset",
+                            "is_trailer_channel": true,
+                            "max_count": 19
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
