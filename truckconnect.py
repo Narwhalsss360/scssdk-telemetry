@@ -176,6 +176,13 @@ class TelemetryType(Enum):
                 return "telemetry_type::channel"
 
     @staticmethod
+    def from_name(name: str) -> TelemetryType:
+        for type_name in TelemetryType:
+            if type_name.name == name:
+                return type_name
+        raise ValueError(f"{name} not found.")
+
+    @staticmethod
     def cpp(tabcount: int = 0) -> str:
         tabstr: str = TAB_CHARS * tabcount
         out: str = f"{tabstr}enum class telemetry_type : uint8_t {{\n"
@@ -242,16 +249,20 @@ class Telemetry:
     def __post_init__(self) -> None:
         self._telemetry: Channel | EventInfo | Structure | None = INVALID_TELEMETRY_DATA
         self._parent_structure: Telemetry | None = None
-        assert self.is_structure or self.is_event_info or self.is_channel, (
+        assert self.telemetry_type != TelemetryType.Invalid or self.is_structure or self.is_event_info or self.is_channel, (
             "telemetry must be either structure, event info or channel"
         )
-        if self.telemetry_type is None:
-            if self.is_structure:
-                self.telemetry_type = TelemetryType.Structure
-            elif self.is_event_info:
-                self.telemetry_type = TelemetryType.EventInfo
-            else:
-                self.telemetry_type = TelemetryType.Channel
+        if isinstance(self.telemetry_type, str):
+            self.telemetry_type = TelemetryType.from_name(self.telemetry_type)
+
+        if (self.attributes or []):
+            for i in range(len(self.attributes)):
+                self.attributes[i] = EventAttribute(**self.attributes[i])
+        if (self.children or []):
+            for i in range(len(self.children)):
+                self.children[i] = Telemetry(**self.children[i])
+        if self.event:
+            self.event = Event(**self.event, event_infos=[])
 
     def apply_parent_structure(self, parent: Telemetry) -> None:
         assert parent.is_structure, "Parent structure must be set."
@@ -274,30 +285,36 @@ class Telemetry:
 
     @property
     def is_channel(self) -> bool:
-        return isinstance(self._telemetry, Channel)
+        return self.telemetry_type == TelemetryType.Channel or isinstance(self._telemetry, Channel)
 
     @property
     def as_channel(self) -> Channel:
         assert self.is_channel, "Requested Channel, but telemetry was not"
-        return self._telemetry
+        if self._telemetry is not None:
+            return self._telemetry
+        return self
 
     @property
     def is_event_info(self) -> bool:
-        return isinstance(self._telemetry, EventInfo)
+        return self.telemetry_type == TelemetryType.EventInfo or isinstance(self._telemetry, EventInfo)
 
     @property
     def as_event_info(self) -> EventInfo:
         assert self.is_event_info, "Requested EventInfo, but telemetry was not"
-        return self._telemetry
+        if self._telemetry is not None:
+            return self._telemetry
+        return self
 
     @property
     def is_structure(self) -> bool:
-        return isinstance(self._telemetry, Structure)
+        return self.telemetry_type == TelemetryType.Structure or (isinstance(self._telemetry, Structure) and self._telemetry is not INVALID_TELEMETRY_DATA)
 
     @property
     def as_structure(self) -> Structure:
-        assert self.is_structure and self._telemetry is not INVALID_TELEMETRY_DATA, "Requested Structure, but telemetry was not"
-        return self._telemetry
+        assert self.is_structure, "Requested Structure, but telemetry was not"
+        if self._telemetry is not INVALID_TELEMETRY_DATA:
+            return self._telemetry
+        return self
 
     @property
     def rank(self) -> int:
@@ -337,10 +354,18 @@ class Telemetry:
         for field in fields(self._telemetry):
             setattr(self, field.name, getattr(self._telemetry, field.name))
         self.identifier = name(self)
+        if self.telemetry_type == TelemetryType.Invalid:
+            if self.is_structure:
+                self.telemetry_type = TelemetryType.Structure
+            elif self.is_event_info:
+                self.telemetry_type = TelemetryType.EventInfo
+            else:
+                self.telemetry_type = TelemetryType.Channel
 
     @staticmethod
     def unbuilt(telemetry: Channel | EventInfo | Structure) -> Telemetry:
-        unbuilt: Telemetry = Telemetry(INVALID_TELEMETRY_ID, TelemetryType.Invalid, False, "")
+        unbuilt: Telemetry = Telemetry(INVALID_TELEMETRY_DATA, TelemetryType.Channel, False, "")
+        unbuilt.telemetry_type = TelemetryType.Invalid
         unbuilt._telemetry = telemetry
         return unbuilt
 
@@ -1673,6 +1698,7 @@ def main() -> None:
         f.write(json.dumps(prepare_distributable(master_telemetry()), indent = 4))
     with open(OUTPUT_FOLDER.joinpath("asdict_telemetry.json"), "w", encoding="utf-8") as f:
         f.write(json.dumps(master_telemetry(), indent=4, cls=TelemetryJSONEncoder))
+
 
 if __name__ == "__main__":
     if retval := main():
