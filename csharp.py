@@ -41,7 +41,7 @@ def pascalify_snake(identifier: str) -> str:
 def telemetry_id_enum(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
-        f"{tabstr}public enum TelemetryID {{\n"
+        f"{tabstr}public enum TelemetryID\n{{\n"
     )
 
     for i, telemetry in enumerate(telemetries):
@@ -58,9 +58,51 @@ def telemetry_id_enum(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     return out
 
 
+def telemetry_type_enum(tabcount: int = 1) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    return (
+        f"{tabstr}public enum TelemetryType\n"
+        f"{tabstr}{{\n"
+        f"{tabstr}{TAB_CHARS}Structure,\n"
+        f"{tabstr}{TAB_CHARS}EventInfo,\n"
+        f"{tabstr}{TAB_CHARS}Channel\n"
+        f"{tabstr}}}\n"
+    )
+
+
+def metadata_class(telemetries: list[Telemetry]) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    out: str = (
+        f"{tabstr}public class Metadata\n{{\n"
+    )
+
+    tabstr = TAB_CHARS * (tabcount + 1)
+    for i, telemetry in enumerate(telemetries):
+        continue
+        out += (
+            f"{tabstr}{TAB_CHARS}{pascalify_snake(name(telemetry))}"
+        )
+        if i != len(telemetries) - 1:
+            out += ","
+        out += "\n"
+
+    out += (
+        f"{tabstr}TelemetryID ID {{ get; init; }}\n\n"
+        f"{tabstr}TelemetryType TelemetryType {{ get; init; }}\n\n"
+        f"{tabstr}TelemetryID ID {{ get; init; }}\n\n"
+        f"{tabstr}TelemetryID ID {{ get; init; }}\n\n"
+    )
+
+    out += (
+        f"{tabstr}}}\n"
+    )
+    return out
+
+
 def generate(telemetries: list[Telemetry]) -> dict[str, str]:
     return {
-        "TelemetryID.cs": telemetry_id_enum(telemetries)
+        "TelemetryID.cs": telemetry_id_enum(telemetries),
+        "TelemetryType.cs": telemetry_type_enum()
     }
 
 
