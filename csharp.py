@@ -43,18 +43,17 @@ def pascalify_snake(identifier: str) -> str:
 def telemetry_id_enum(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
-        f"{tabstr}public enum TelemetryID\n{{\n"
+        f"{tabstr}public enum TelemetryID\n"
+        f"{tabstr}{{\n"
     )
 
     for i, telemetry in enumerate(telemetries):
         out += (
-            f"{tabstr}{TAB_CHARS}{pascalify_snake(name(telemetry))}"
+            f"{tabstr}{TAB_CHARS}{pascalify_snake(name(telemetry))},\n"
         )
-        if i != len(telemetries) - 1:
-            out += ","
-        out += "\n"
 
     out += (
+        f"{tabstr}{TAB_CHARS}Invalid = 255\n"
         f"{tabstr}}}\n"
     )
     return out
