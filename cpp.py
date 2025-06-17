@@ -1179,87 +1179,60 @@ def memory_usage_function(tabcount: int = 0) -> str:
 # endregion
 
 
-def main() -> None:
-    telemetries: list[Telemetry] = build_telemetries()
-    print(f"Loaded {len(telemetries)} telemetries.")
-
-    if not OUTPUT_FOLDER.exists():
-        OUTPUT_FOLDER.mkdir()
-    with open(OUTPUT_FOLDER.joinpath("master_structure.h"), "w", encoding="utf-8") as f:
-        f.write(master_structure(master_telemetry()))
-        print(f"Generated {f.name}")
-    with open(
-        OUTPUT_FOLDER.joinpath("telemetry_type_enum.h"), "w", encoding="utf-8"
-    ) as f:
-        f.write(TelemetryType.cpp())
-        print(f"Generated {f.name}")
-    with open(
-        OUTPUT_FOLDER.joinpath("telemetry_id_enum.h"), "w", encoding="utf-8"
-    ) as f:
-        f.write(telemetries_ids_enum(telemetries))
-        print(f"Generated {f.name}")
-    with open(
-        OUTPUT_FOLDER.joinpath("telemetry_metadata_structs.h"), "w", encoding="utf-8"
-    ) as f:
-        f.write(telemetry_metadata_structs(telemetries))
-        print(f"Generated {f.name}")
-    with open(
-        OUTPUT_FOLDER.joinpath("telemetry_metadata_functions.h"), "w", encoding="utf-8"
-    ) as f:
-        f.write(f"{telemetry_type_of_function(telemetries)}\n")
-        f.write(f"{master_offset_of_function(telemetries)}\n")
-        f.write(f"{structure_offset_of_function(telemetries)}\n")
-        f.write(f"{indexed_function(telemetries)}\n")
-        f.write(f"{max_count_function(telemetries)}\n")
-        f.write(f"{is_trailer_channel_function(telemetries)}\n")
-        f.write(f"{scs_type_id_of_function(telemetries)}\n")
-        f.write(f"{id_of_function(telemetries)}\n")
-        f.write(f"{name_of_function(telemetries)}\n")
-        f.write(f"{size_of_function(telemetries)}\n")
-        f.write(f"{offset_of_latest_function(telemetries)}\n")
-        f.write(f"{event_info_member_offset_of_function(telemetries)}\n")
-        f.write(f"{event_info_member_scs_type_id_function(telemetries)}\n")
-        f.write(f"{event_info_member_indexed_function(telemetries)}\n")
-        f.write(f"{event_info_latest_offset(telemetries)}\n")
-        f.write(f"{event_info_member_function(telemetries)}\n")
-        f.write(f"{is_custom_channel_function(telemetries)}\n")
-        f.write(f"{metadata_value_of_function(telemetries)}\n")
-        f.write(f"{is_constant_size_function(telemetries)}\n")
-        print(f"Generated {f.name}")
-    with open(OUTPUT_FOLDER.joinpath("storage_type_of.h"), "w", encoding="utf-8") as f:
-        f.write(storage_type_of_template(telemetries))
-        print(f"Generated {f.name}")
-    with open(OUTPUT_FOLDER.joinpath("register_all.cpp"), "w", encoding="utf-8") as f:
-        f.write(
-            register_all_function(
-                telemetries, "store", "store", "store", "store", "handle_event"
-            )
-        )
-        print(f"Generated {f.name}")
-    with open(OUTPUT_FOLDER.joinpath("memory_usage.cpp"), "w", encoding="utf-8") as f:
-        f.write(memory_usage_function())
-        print(f"Generated {f.name}")
-    with open(
-        OUTPUT_FOLDER.joinpath("packed_size_of_constants.h"), "w", encoding="utf-8"
-    ) as f:
-        f.write(packed_size_of_function(telemetries))
-        print(f"Generated {f.name}")
+def generate(telemetries: list[Telemetry]) -> dict[str, str]:
     append_bytes_functions_decl, append_bytes_functions_impl = append_bytes_functions(
         telemetries
     )
     from_bytes_functions_decl, from_bytes_functions_impl = from_bytes_functions(
         telemetries
     )
-    with open(OUTPUT_FOLDER.joinpath("byte_converters.h"), "w", encoding="utf-8") as f:
-        f.write(f"{append_bytes_functions_decl}\n")
-        f.write(f"{from_bytes_functions_decl}\n")
-        print(f"Generated {f.name}")
-    with open(
-        OUTPUT_FOLDER.joinpath("byte_converters.cpp"), "w", encoding="utf-8"
-    ) as f:
-        f.write(f"{append_bytes_functions_impl}\n")
-        f.write(f"{from_bytes_functions_impl}\n")
-        print(f"Generated {f.name}")
+
+    return {
+
+        "master_structure.h": master_structure(master_telemetry()),
+        "telemetry_type_enum.h": TelemetryType.cpp(),
+        "telemetry_id_enum.h": telemetries_ids_enum(telemetries),
+        "telemetry_metadata_structs.h": telemetry_metadata_structs(telemetries),
+        "telemetry_metadata_functions.h": (
+            f"{telemetry_type_of_function(telemetries)}\n"
+            f"{master_offset_of_function(telemetries)}\n"
+            f"{structure_offset_of_function(telemetries)}\n"
+            f"{indexed_function(telemetries)}\n"
+            f"{max_count_function(telemetries)}\n"
+            f"{is_trailer_channel_function(telemetries)}\n"
+            f"{scs_type_id_of_function(telemetries)}\n"
+            f"{id_of_function(telemetries)}\n"
+            f"{name_of_function(telemetries)}\n"
+            f"{size_of_function(telemetries)}\n"
+            f"{offset_of_latest_function(telemetries)}\n"
+            f"{event_info_member_offset_of_function(telemetries)}\n"
+            f"{event_info_member_scs_type_id_function(telemetries)}\n"
+            f"{event_info_member_indexed_function(telemetries)}\n"
+            f"{event_info_latest_offset(telemetries)}\n"
+            f"{event_info_member_function(telemetries)}\n"
+            f"{is_custom_channel_function(telemetries)}\n"
+            f"{metadata_value_of_function(telemetries)}\n"
+            f"{is_constant_size_function(telemetries)}\n"
+        ),
+        "storage_type_of.h": storage_type_of_template(telemetries),
+        "register_all.cpp": register_all_function(telemetries, "store", "store", "store", "store", "handle_event"),
+        "memory_usage.cpp": memory_usage_function(),
+        "packed_size_of_constants.h": packed_size_of_function(telemetries),
+        "byte_converters.h": append_bytes_functions_decl + from_bytes_functions_decl,
+        "byte_converters.cpp": append_bytes_functions_impl + from_bytes_functions_impl,
+    }
+
+
+def main() -> None:
+    telemetries: list[Telemetry] = build_telemetries()
+    print(f"Loaded {len(telemetries)} telemetries.")
+    if not OUTPUT_FOLDER.exists():
+        OUTPUT_FOLDER.mkdir()
+    files: dict[str, str] = generate(telemetries)
+    for file_name, text in files.items():
+        with open(OUTPUT_FOLDER.joinpath(file_name), "w", encoding="utf-8") as f:
+            f.write(text)
+            print(f"Generated {text.count('\n')} lines {file_name}.")
 
 
 if __name__ == "__main__":
