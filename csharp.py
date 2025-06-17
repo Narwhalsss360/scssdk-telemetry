@@ -111,7 +111,7 @@ def metadata_class(telemetries: list[Telemetry], tabcount: int = 1) -> str:
         f"{tabstr}public bool? TrailerChannel {{ get; init; }}\n\n"
         f"{tabstr}public SCSValueType? SCSValueType {{ get; init; }}\n\n"
         f"{tabstr}public bool? CustomChannel {{ get; init; }}\n\n"
-        f"{tabstr}public static Metadata? ByID(TelemetryID id) => Array.Find(METADATA, metadata => metadata.id == id);\n\n"
+        f"{tabstr}public static Metadata? ByID(TelemetryID id) => Array.Find(METADATA, metadata => metadata.ID == id);\n\n"
     )
 
     out += (
