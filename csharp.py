@@ -9,6 +9,8 @@ from truckconnect import (
     master_telemetry,
     trailer_structure_telemetry,
     configuration_trailer_structure_telemetry,
+    TYPE_MACROS_BY_ID,
+    Channel
 )
 
 
@@ -70,31 +72,104 @@ def telemetry_type_enum(tabcount: int = 1) -> str:
     )
 
 
-def metadata_class(telemetries: list[Telemetry]) -> str:
+def cs_value(value: TelemetryType | bool) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+
+    if isinstance(value, TelemetryType):
+        match value:
+            case TelemetryType.Structure:
+                return "TelemetryType.Structure"
+            case TelemetryType.EventInfo:
+                return "TelemetryType.EventInfo"
+            case TelemetryType.Channel:
+                return "TelemetryType.Channel"
+
+    assert False, "Unknown type."
+
+
+def cs_scs_value_type(channel: Channel) -> str:
+    return f"TruckConnect.SCSValueType.{TYPE_MACROS_BY_ID[channel.scs_type_id]}"
+
+
+def metadata_class(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
-        f"{tabstr}public class Metadata\n{{\n"
+        f"{tabstr}public class Metadata\n"
+        f"{tabstr}{{\n"
     )
 
     tabstr = TAB_CHARS * (tabcount + 1)
-    for i, telemetry in enumerate(telemetries):
-        continue
-        out += (
-            f"{tabstr}{TAB_CHARS}{pascalify_snake(name(telemetry))}"
-        )
-        if i != len(telemetries) - 1:
-            out += ","
-        out += "\n"
-
     out += (
-        f"{tabstr}TelemetryID ID {{ get; init; }}\n\n"
-        f"{tabstr}TelemetryType TelemetryType {{ get; init; }}\n\n"
-        f"{tabstr}TelemetryID ID {{ get; init; }}\n\n"
-        f"{tabstr}TelemetryID ID {{ get; init; }}\n\n"
+        f"{tabstr}public TelemetryID ID {{ get; init; }}\n\n"
+        f"{tabstr}public TelemetryType TelemetryType {{ get; init; }}\n\n"
+        f"{tabstr}public bool ConstantSize {{ get; init; }}\n\n"
+        f"{tabstr}public UInt32 MasterOffset {{ get; init; }}\n\n"
+        f"{tabstr}public UInt32 StructureOffset {{ get; init; }}\n\n"
+        f"{tabstr}public string? Macro {{ get; init; }}\n\n"
+        f"{tabstr}public bool? Indexed {{ get; init; }}\n\n"
+        f"{tabstr}public UInt32? MaxCount {{ get; init; }}\n\n"
+        f"{tabstr}public bool? TrailerChannel {{ get; init; }}\n\n"
+        f"{tabstr}public SCSValueType? SCSValueType {{ get; init; }}\n\n"
+        f"{tabstr}public bool? CustomChannel {{ get; init; }}\n\n"
+        f"{tabstr}public static Metadata? ByID(TelemetryID id) => Array.Find(METADATA, metadata => metadata.id == id);\n\n"
     )
 
     out += (
-        f"{tabstr}}}\n"
+        f"{tabstr}public static readonly Metadata[] METADATA =\n"
+        f"{tabstr}[\n"
+    )
+    for i, telemetry in enumerate(telemetries):
+        out += (
+            f"{tabstr}{TAB_CHARS}new() {{ "
+        )
+
+        out += (
+            f"ID = TelemetryID.{pascalify_snake(name(telemetry))}, "
+            f"TelemetryType = {cs_value(telemetry.telemetry_type)}, "
+            f"ConstantSize = {cs_value(telemetry.constant_size)}, "
+        )
+
+        if telemetry.is_structure:
+            if telemetry == master_telemetry():
+                out += (
+                    f"MasterOffset = 0, "
+                    f"StructureOffset = 0 "
+                )
+            else:
+                out += (
+                    f"MasterOffset = 0, /*?*/ "
+                    f"StructureOffset = 0 /*?*/ "
+                )
+        elif telemetry.is_event_info:
+            out += (
+                f"MasterOffset = 0, /*?*/ "
+                f"StructureOffset = 0, /*?*/ "
+                f"Macro = \"{telemetry.as_event_info.expansion}\" "
+            )
+        else: #=> telemetry.is_channel
+            out += (
+                f"MasterOffset = 0, /*?*/ "
+                f"StructureOffset = 0, /*?*/ "
+                f"Macro = \"{telemetry.as_channel.expansion}\", "
+                f"Indexed = {cs_value(telemetry.as_channel.indexed)}, "
+                f"MaxCount = {telemetry.as_channel.max_count} ,"
+                f"TrailerChannel = {cs_value(telemetry.as_channel.is_trailer_channel)}, "
+                f"SCSValueType = {cs_scs_value_type(telemetry.as_channel)}, "
+                f"CustomChannel = {cs_value(is_custom_channel(telemetry))}"
+            )
+
+        out += "}"
+        if i != len(telemetries) - 1:
+            out += ","
+        out += "\n"
+    out += (
+        f"{tabstr}];\n"
+    )
+
+
+    out += (
+        f"{TAB_CHARS * tabcount}}}\n"
     )
     return out
 
@@ -102,7 +177,8 @@ def metadata_class(telemetries: list[Telemetry]) -> str:
 def generate(telemetries: list[Telemetry]) -> dict[str, str]:
     return {
         "TelemetryID.cs": telemetry_id_enum(telemetries),
-        "TelemetryType.cs": telemetry_type_enum()
+        "TelemetryType.cs": telemetry_type_enum(),
+        "Metadata.cs": metadata_class(telemetries)
     }
 
 

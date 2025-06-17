@@ -1179,7 +1179,7 @@ def memory_usage_function(tabcount: int = 0) -> str:
 # endregion
 
 
-def generate(telemetries: list[Telemetry]) -> dict[str, str]:
+def generate(telemetries: list[Telemrtry]) -> dict[str, str]:
     append_bytes_functions_decl, append_bytes_functions_impl = append_bytes_functions(
         telemetries
     )
@@ -1190,7 +1190,7 @@ def generate(telemetries: list[Telemetry]) -> dict[str, str]:
     return {
 
         "master_structure.h": master_structure(master_telemetry()),
-        "telemetry_type_enum.h": TelemetryType.cpp(),
+        "telemetry_type_enum.h": TelemtryType.cpp(),
         "telemetry_id_enum.h": telemetries_ids_enum(telemetries),
         "telemetry_metadata_structs.h": telemetry_metadata_structs(telemetries),
         "telemetry_metadata_functions.h": (
