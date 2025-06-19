@@ -36,7 +36,7 @@ def pascalify_snake(identifier: str) -> str:
         as_pascal += c
 
     if snaked: #Add trailing underscore
-        c += "_"
+        as_pascal += "_"
     return as_pascal
 
 
@@ -91,6 +91,18 @@ def cs_scs_value_type(channel: Channel) -> str:
     return f"TruckConnect.SCSValueType.{TYPE_MACROS_BY_ID[channel.scs_type_id]}"
 
 
+def fullprop(tabcount: int, field_type: str, field_name: str, field_default: str, propertry_type: str, property_name: str, getter: str, setter: str) -> str:
+    tabstr: str = TAB_CHARS * tabcount
+    return (
+        f"{tabstr}private {field_type} {field_name} = {field_default};\n"
+        f"{tabstr}public {propertry_type} {property_name}\n"
+        f"{tabstr}{{\n"
+        f"{tabstr}{TAB_CHARS}get {getter}\n"
+        f"{tabstr}{TAB_CHARS}init {setter}\n"
+        f"{tabstr}}}\n\n"
+    )
+
+
 def metadata_class(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     tabstr: str = TAB_CHARS * tabcount
     out: str = (
@@ -99,19 +111,28 @@ def metadata_class(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     )
 
     tabstr = TAB_CHARS * (tabcount + 1)
+
+    not_a_channel_exception: str = "throw new InvalidOperationException(\"This property is only available for channels.\")"
+    channel_getter = lambda field: f"=> TelemetryType == TelemetryType.Channel ? {field} : {not_a_channel_exception};"
+    channel_setter = lambda field: f"=> {field} = TelemetryType == TelemetryType.Channel ? value : {not_a_channel_exception};"
+
+    non_structure_exception: str = "throw new InvalidOperationException(\"This property is not available on structures.\")"
+    non_structure_getter = lambda field: f"=> TelemetryType != TelemetryType.Structure ? {field} : {non_structure_exception};"
+    non_structure_setter = lambda field: f"=> {field} = TelemetryType != TelemetryType.Structure ? value : {non_structure_exception};"
+
     out += (
-        f"{tabstr}public TelemetryID ID {{ get; init; }}\n\n"
-        f"{tabstr}public TelemetryType TelemetryType {{ get; init; }}\n\n"
-        f"{tabstr}public bool ConstantSize {{ get; init; }}\n\n"
-        f"{tabstr}public UInt32 MasterOffset {{ get; init; }}\n\n"
-        f"{tabstr}public UInt32 StructureOffset {{ get; init; }}\n\n"
-        f"{tabstr}public string? Macro {{ get; init; }}\n\n"
-        f"{tabstr}public bool? Indexed {{ get; init; }}\n\n"
-        f"{tabstr}public UInt32? MaxCount {{ get; init; }}\n\n"
-        f"{tabstr}public bool? TrailerChannel {{ get; init; }}\n\n"
-        f"{tabstr}public SCSValueType? SCSValueType {{ get; init; }}\n\n"
-        f"{tabstr}public bool? CustomChannel {{ get; init; }}\n\n"
-        f"{tabstr}public static Metadata? ByID(TelemetryID id) => Array.Find(METADATA, metadata => metadata.ID == id);\n\n"
+        f"{tabstr}public TelemetryType TelemetryType {{ get; init; }}\n\n" +
+        f"{tabstr}public TelemetryID ID {{ get; init; }}\n\n" +
+        f"{tabstr}public bool ConstantSize {{ get; init; }}\n\n" +
+        f"{tabstr}public UInt32 MasterOffset {{ get; init; }}\n\n" +
+        f"{tabstr}public UInt32 StructureOffset {{ get; init; }}\n\n" +
+        fullprop(tabcount + 1, "string", "_macro", "\"\"", "string", "Macro", non_structure_getter("_macro"), non_structure_setter("_macro")) +
+        fullprop(tabcount + 1, "bool", "_indexed", "false", "bool", "Indexed", non_structure_getter("_indexed"), non_structure_setter("_indexed")) +
+        fullprop(tabcount + 1, "UInt32", "_maxCount", "0", "UInt32", "MaxCount", channel_getter("_maxCount"), channel_setter("_maxCount")) +
+        fullprop(tabcount + 1, "bool", "_trailerChannel", "false", "bool", "TrailerChannel", channel_getter("_trailerChannel"), channel_setter("_trailerChannel")) +
+        fullprop(tabcount + 1, "SCSValueType", "_valueType", "SCSValueType.SCS_VALUE_TYPE_INVALID", "SCSValueType", "SCSValueType", channel_getter("_valueType"), channel_setter("_valueType")) +
+        fullprop(tabcount + 1, "bool", "_customChannel", "false", "bool", "CustomChannel", channel_getter("_customChannel"), channel_setter("_customChannel")) +
+        f"{tabstr}public static Metadata ByID(TelemetryID id) => Array.Find(METADATA, metadata => metadata.ID == id) ?? throw new ArgumentException(\"Metadata not found\", nameof(id));\n\n"
     )
 
     out += (
