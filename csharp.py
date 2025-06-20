@@ -1,4 +1,5 @@
 from pathlib import Path
+from scssdk_dataclasses import Event, EventAttribute, SCS_TELEMETRY_trailers_count
 from truckconnect import (
     Telemetry,
     name,
@@ -12,10 +13,27 @@ from truckconnect import (
     TYPE_MACROS_BY_ID,
     Channel
 )
+import truckconnect
 
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
 TAB_CHARS: str = "\t"
+CS_TYPE_BY_ID: list[str] = [
+    "scs_invalid_t",
+    "Boolean",
+    "Int32",
+    "UInt32",
+    "UInt64",
+    "Single",
+    "Double",
+    "SCSValueFVector",
+    "SCSValueDVector",
+    "SCSValueEuler",
+    "SCSValueFPlacement",
+    "SCSValueDPlacement",
+    "String",
+    "Int64"
+]
 
 
 def pascalify_snake(identifier: str) -> str:
@@ -35,10 +53,24 @@ def pascalify_snake(identifier: str) -> str:
             continue
         as_pascal += c
 
-    if snaked: #Add trailing underscore
+    if snaked:  # Add trailing underscore
         as_pascal += "_"
     return as_pascal
 
+
+def name(telemetry_or_attr_str: Telemetry | EventAttribute | str) -> str:
+    return pascalify_snake(truckconnect.name(telemetry_or_attr_str))
+
+
+def storage(telemetry_or_event_attr: Telemetry | EventAttribute) -> str:
+    if isinstance(telemetry_or_event_attr, EventAttribute):
+        return f"{'ValueListStorage' if telemetry_or_event_attr.indexed else 'ValueStorage'}<{CS_TYPE_BY_ID[telemetry_or_event_attr.scs_type_id]}>"
+    elif telemetry_or_event_attr.is_channel:
+        return f"{'ValueArrayStorage' if telemetry_or_event_attr.indexed else 'ValueStorage'}<{CS_TYPE_BY_ID[telemetry_or_event_attr.as_channel.scs_type_id]}>"
+    elif telemetry_or_event_attr.is_structure:
+        return pascalify_snake(telemetry_or_event_attr.as_structure.type_name)
+    else:  # => telemetry_or_event_attr.is_event_info
+        return pascalify_snake(f"{name(telemetry_or_event_attr.parent_structure)}_{telemetry_or_event_attr.as_event_info.simple_name}_storage")
 
 def telemetry_id_enum(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     tabstr: str = TAB_CHARS * tabcount
@@ -194,11 +226,56 @@ def metadata_class(telemetries: list[Telemetry], tabcount: int = 1) -> str:
     return out
 
 
+def master_structure(master: Telemetry, tabcount: int = 1) -> str:
+    def recurse(tabcount: int, telemetry: Telemetry | EventAttribute, double_nl: bool = True) -> str:
+        tabstr: str = TAB_CHARS * tabcount
+        if isinstance(telemetry, EventAttribute):
+            out: str = f"{tabstr}public {storage(telemetry)} {name(telemetry)} = new();\n" + ("\n" if double_nl else "")
+        elif telemetry.is_structure:
+            if telemetry == trailer_structure_telemetry():
+                out: str = f"{tabstr}public {storage(telemetry)}[] {name(telemetry)} = new {storage(telemetry)}[{SCS_TELEMETRY_trailers_count}];\n"
+            elif telemetry != master_telemetry():
+                out: str = f"{tabstr}public {storage(telemetry)} {name(telemetry)} = new();\n"
+            else:
+                out: str = ""
+
+            out += (
+                f"{tabstr}public struct {storage(telemetry)}()\n"
+                f"{tabstr}{{\n"
+            )
+
+            for i, child in enumerate(telemetry.as_structure.children):
+                out += recurse(tabcount + 1, child, i != len(telemetry.as_structure.children) - 1)
+
+            out += f"{tabstr}}}\n" + ("\n" if double_nl else "")
+        elif telemetry.is_event_info:
+            if telemetry == configuration_trailer_structure_telemetry():
+                out: str = f"{tabstr}public {storage(telemetry)}[] {name(telemetry)} = new {storage(telemetry)}[{SCS_TELEMETRY_trailers_count}];\n"
+            else:
+                out: str = f"{tabstr}public {storage(telemetry)} {name(telemetry)} = new();\n"
+
+            out += (
+                f"{tabstr}public struct {storage(telemetry)}()\n"
+                f"{tabstr}{{\n"
+            )
+
+            for i, attribute in enumerate(telemetry.as_event_info.attributes):
+                out += recurse(tabcount + 1, attribute, i != len(telemetry.as_event_info.attributes) - 1)
+
+            out += f"{tabstr}}}\n" + ("\n" if double_nl else "")
+        else:  # => is_channel = True
+            out: str = f"{tabstr}public {storage(telemetry)} {name(telemetry)} = new();\n" + ("\n" if double_nl else "")
+
+        return out
+
+    return recurse(tabcount, master)
+
 def generate(telemetries: list[Telemetry]) -> dict[str, str]:
     return {
         "TelemetryID.cs": telemetry_id_enum(telemetries),
         "TelemetryType.cs": telemetry_type_enum(),
-        "Metadata.cs": metadata_class(telemetries)
+        "Metadata.cs": metadata_class(telemetries),
+        "MasterStructure.cs": master_structure(master_telemetry())
     }
 
 
