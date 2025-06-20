@@ -264,7 +264,13 @@ def master_structure(master: Telemetry, tabcount: int = 1) -> str:
 
             out += f"{tabstr}}}\n" + ("\n" if double_nl else "")
         else:  # => is_channel = True
-            out: str = f"{tabstr}public {storage(telemetry)} {name(telemetry)} = new();\n" + ("\n" if double_nl else "")
+            if telemetry.as_channel.indexed:
+                out: str = (
+                    f"{tabstr}[StaticSize({telemetry.as_channel.max_count})]\n"
+                    f"{tabstr}public {storage(telemetry)} {name(telemetry)} = new({telemetry.as_channel.max_count});\n" + ("\n" if double_nl else "")
+                )
+            else:
+                out: str = f"{tabstr}public {storage(telemetry)} {name(telemetry)} = new();\n" + ("\n" if double_nl else "")
 
         return out
 
