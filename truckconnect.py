@@ -11,6 +11,7 @@ from scssdk_dataclasses import (
     TYPE_SIZE_BY_ID,
     TYPE_MACROS_BY_ID,
     SCS_TELEMETRY_trailers_count,
+    id_of_type
 )
 import json
 
@@ -251,6 +252,11 @@ class Telemetry:
             return f"{self.as_event_info.event.simple_name}_{self.as_event_info.simple_name}_info"
         elif self.is_channel:
             return self.as_channel.simple_name
+
+    @property
+    def scs_type_id(self) -> int:
+        assert self.is_channel, "The 'scs_type_id' is only available for channels"
+        return id_of_type(self.as_channel.type)
 
     def _constant_size(self) -> bool:
         if self.is_channel:
