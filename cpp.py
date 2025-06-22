@@ -137,7 +137,7 @@ def qualified_id(telemetry: Telemetry) -> str:
 
 # region Types and Constants Generators
 def master_structure(master: Telemetry, tabcount: int = 0) -> str:
-    def recurse(tabcount: str, telemetry: Telemetry | EventAttribute):
+    def recurse(tabcount: int, telemetry: Telemetry | EventAttribute):
         tabstr: str = TAB_CHARS * tabcount
         if isinstance(telemetry, EventAttribute):
             out = f"{tabstr}{storage(telemetry)[0]} {name(telemetry)} {{}};\n"
