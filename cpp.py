@@ -892,7 +892,7 @@ def from_bytes_function(
     qualified_type_name: str = qualify_type_name(structure_telemetry)
     declarations: list[str] = [
         f"{tabstr}bool from_bytes(const std::vector<uint8_t>& as_bytes, {qualified_type_name}& {name(structure_telemetry)}, const uint32_t offset, uint32_t& read)",
-        f"{tabstr}static bool from_bytes(const std::vector<uint8_t>& as_bytes, {qualified_type_name}& {name(structure_telemetry)}) {{ uint32_t read; return from_bytes(as_bytes, {name(structure_telemetry)}, 0, read); }}",
+        f"{tabstr}static bool from_bytes(const std::vector<uint8_t>& as_bytes, {qualified_type_name}& {name(structure_telemetry)}, const uint32_t offset = 0) {{ uint32_t read; return from_bytes(as_bytes, {name(structure_telemetry)}, offset, read); }}",
     ]
     out: str = f"{declarations[0]} {{\n"
     declarations[0] += ";"
@@ -1179,7 +1179,7 @@ def memory_usage_function(tabcount: int = 0) -> str:
 # endregion
 
 
-def generate(telemetries: list[Telemrtry]) -> dict[str, str]:
+def generate(telemetries: list[Telemetry]) -> dict[str, str]:
     append_bytes_functions_decl, append_bytes_functions_impl = append_bytes_functions(
         telemetries
     )
@@ -1190,7 +1190,7 @@ def generate(telemetries: list[Telemrtry]) -> dict[str, str]:
     return {
 
         "master_structure.h": master_structure(master_telemetry()),
-        "telemetry_type_enum.h": TelemtryType.cpp(),
+        "telemetry_type_enum.h": TelemetryType.cpp(),
         "telemetry_id_enum.h": telemetries_ids_enum(telemetries),
         "telemetry_metadata_structs.h": telemetry_metadata_structs(telemetries),
         "telemetry_metadata_functions.h": (
