@@ -204,6 +204,13 @@ def metadata_value_struct(namespace: str, tab_count: int) -> str:
         f"{tabstr}constexpr const trailer_index_uint INVALID_TRAILER_INDEX = static_cast<trailer_index_uint>(-1);\n\n"
         f"{tabstr}constexpr const uint32_t INVALID_SIZE = 0;\n\n"
         f"{tabstr}constexpr const uint32_t DEFAULT_MAX_COUNT = 0;\n\n"
+<<<<<<< HEAD
+=======
+        f"{tabstr}constexpr const {TELEMETRY_ID_ENUM_TYPE_NAME} LIFETIME_INVALID_ID = {TELEMETRY_ID_ENUM_TYPE_NAME}::invalid;\n\n"
+        f"{tabstr}constexpr const telemetry_type LIFETIME_INVALID_TYPE = telemetry_type::invalid;\n\n"
+        f'{tabstr}constexpr const char* const LIFETIME_INVALID_CSTR = "";\n\n'
+        f"{tabstr}constexpr const bool LIFETIME_FALSE = false;\n\n"
+>>>>>>> b5ea5af (Using value type instead of reference type for constant expressions)
     )
 
     out += (
@@ -346,8 +353,13 @@ def telemetry_metadata_structs(
             out += (
                 f"{tabstr}{TAB_CHARS}using storage_type = {type_name(telemetry)};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const uint32_t storage_type_size = sizeof(storage_type);\n"
+<<<<<<< HEAD
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_channel.macro}";\n'
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_channel.expansion}";\n'
+=======
+                f'{tabstr}{TAB_CHARS}static constexpr const char* const& macro_identifier = "{telemetry.as_channel.macro}";\n'
+                f'{tabstr}{TAB_CHARS}static constexpr const char* const& macro = "{telemetry.as_channel.expansion}";\n'
+>>>>>>> b5ea5af (Using value type instead of reference type for constant expressions)
                 f"{tabstr}{TAB_CHARS}static constexpr const bool indexed = {cpp_bool(telemetry.as_channel.indexed)};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const uint32_t max_count = {telemetry.as_channel.max_count};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const bool trailer_channel = {cpp_bool(telemetry.as_channel.is_trailer_channel)};\n"
