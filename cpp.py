@@ -105,17 +105,20 @@ def type_name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
         return channel_storage(telemetry_or_attr.as_channel)[0]
 
 
-def qualify_name(*args: tuple[Telemetry]) -> str:
+def qualify(*args: str) -> str:
     qualified: str = ""
-    for i, node in enumerate(args):
-        qualified += name(node)
+    for i, identifier in enumerate(args):
+        qualified += identifier
         if i != len(args) - 1:
             qualified += "::"
     return qualified
 
+def qualify_name(*args: Telemetry) -> str:
+    return qualify(*tuple(arg.name for arg in args))
+
 
 def qualify_type_name(telemetry: Telemetry) -> str:
-    return qualify_name(
+    return qualify(
         *tuple(
             name(node) if node.is_channel else type_name(node)
             for node in telemetry.parents[::-1] + [telemetry]
@@ -132,7 +135,7 @@ def offsetof(type_name: str, member: str) -> str:
 
 
 def qualified_id(telemetry: Telemetry) -> str:
-    return qualify_name(TELEMETRY_ID_ENUM_TYPE_NAME, telemetry.name)
+    return qualify(TELEMETRY_ID_ENUM_TYPE_NAME, telemetry.name)
 
 
 # region Types and Constants Generators
@@ -204,13 +207,6 @@ def metadata_value_struct(namespace: str, tab_count: int) -> str:
         f"{tabstr}constexpr const trailer_index_uint INVALID_TRAILER_INDEX = static_cast<trailer_index_uint>(-1);\n\n"
         f"{tabstr}constexpr const uint32_t INVALID_SIZE = 0;\n\n"
         f"{tabstr}constexpr const uint32_t DEFAULT_MAX_COUNT = 0;\n\n"
-<<<<<<< HEAD
-=======
-        f"{tabstr}constexpr const {TELEMETRY_ID_ENUM_TYPE_NAME} LIFETIME_INVALID_ID = {TELEMETRY_ID_ENUM_TYPE_NAME}::invalid;\n\n"
-        f"{tabstr}constexpr const telemetry_type LIFETIME_INVALID_TYPE = telemetry_type::invalid;\n\n"
-        f'{tabstr}constexpr const char* const LIFETIME_INVALID_CSTR = "";\n\n'
-        f"{tabstr}constexpr const bool LIFETIME_FALSE = false;\n\n"
->>>>>>> b5ea5af (Using value type instead of reference type for constant expressions)
     )
 
     out += (
@@ -325,14 +321,14 @@ def telemetry_metadata_structs(
             )
             if telemetry != master_telemetry():
                 out += (
-                    f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify_name(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
+                    f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
                     f"{tabstr}{TAB_CHARS}static constexpr const metadata_value metadata_value = {namespace}::metadata_value(id, telemetry_type, constant_size, master_offset, structure_offset, storage_type_size);\n"
                 )
             else:
                 out += f"{tabstr}{TAB_CHARS}static constexpr const metadata_value metadata_value = {namespace}::metadata_value(id, telemetry_type, constant_size, master_offset, structure_offset, storage_type_size);\n"
         elif telemetry.is_event_info:
             out += (
-                f"{tabstr}{TAB_CHARS}using storage_type = {qualify_name(*[type_name(parent) for parent in ([] if telemetry == master_telemetry() else telemetry.parents[::-1])], type_name(telemetry))};\n"
+                f"{tabstr}{TAB_CHARS}using storage_type = {qualify(*[type_name(parent) for parent in ([] if telemetry == master_telemetry() else telemetry.parents[::-1])], type_name(telemetry))};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const uint32_t storage_type_size = sizeof(storage_type);\n"
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_event_info.macro}";\n'
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_event_info.expansion}";\n'
@@ -353,13 +349,8 @@ def telemetry_metadata_structs(
             out += (
                 f"{tabstr}{TAB_CHARS}using storage_type = {type_name(telemetry)};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const uint32_t storage_type_size = sizeof(storage_type);\n"
-<<<<<<< HEAD
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_channel.macro}";\n'
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_channel.expansion}";\n'
-=======
-                f'{tabstr}{TAB_CHARS}static constexpr const char* const& macro_identifier = "{telemetry.as_channel.macro}";\n'
-                f'{tabstr}{TAB_CHARS}static constexpr const char* const& macro = "{telemetry.as_channel.expansion}";\n'
->>>>>>> b5ea5af (Using value type instead of reference type for constant expressions)
                 f"{tabstr}{TAB_CHARS}static constexpr const bool indexed = {cpp_bool(telemetry.as_channel.indexed)};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const uint32_t max_count = {telemetry.as_channel.max_count};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const bool trailer_channel = {cpp_bool(telemetry.as_channel.is_trailer_channel)};\n"
@@ -598,7 +589,7 @@ def offset_of_latest_function(telemetries: list[Telemetry], tabcount: int = 0) -
     )
 
     for i, telemetry in enumerate(filter(lambda t: t.is_event_info, telemetries)):
-        out += f"{tabstr}{TAB_CHARS * 2}case {qualified_id(telemetry)}: return offsetof({name(telemetry)}::storage_type, latest);\n"
+        out += f"{tabstr}{TAB_CHARS * 2}case {qualified_id(telemetry)}: return {offsetof(qualify(name(telemetry), 'storage_type'), 'latest')};\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
@@ -623,7 +614,7 @@ def event_info_member_offset_of_function(
             f"{tabstr}{TAB_CHARS * 3}return\n"
         )
         for attribute in telemetry.as_event_info.attributes:
-            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.expansion}") ? offsetof({name(telemetry)}::storage_type, {attribute.simple_name}) :\n'
+            out += f'{tabstr}{TAB_CHARS * 4}streq(member, "{attribute.expansion}") ? {offsetof(qualify(name(telemetry), 'storage_type'), attribute.simple_name)} :\n'
         out += f"{tabstr}{TAB_CHARS * 4}INVALID_OFFSET;\n"
 
     out += (
@@ -695,7 +686,7 @@ def event_info_latest_offset(telemetries: list[Telemetry], tabcount: int = 0) ->
     )
 
     for i, telemetry in enumerate(filter(lambda t: t.is_event_info, telemetries)):
-        out += f"{tabstr}{TAB_CHARS * 2}case {qualified_id(telemetry)}: return offsetof({name(telemetry)}::storage_type, latest);\n"
+        out += f"{tabstr}{TAB_CHARS * 2}case {qualified_id(telemetry)}: return {offsetof(qualify(name(telemetry), 'storage_type'), 'latest')};\n"
 
     out += (
         f"{tabstr}{TAB_CHARS * 2}default: return INVALID_OFFSET;\n"
@@ -864,7 +855,7 @@ def append_bytes_function(
     qualified_type_name: str = qualify_type_name(structure_telemetry)
     out: str = (
         f"{tabstr}void append_bytes(const {qualified_type_name}& {name(structure_telemetry)}, std::vector<uint8_t>& out) {{\n"
-        f"{tabstr}{TAB_CHARS}constexpr const uint32_t packed_size = {qualify_name(metadata_namespace, 'packed_size_of')}({qualified_id(structure_telemetry)});\n"
+        f"{tabstr}{TAB_CHARS}constexpr const uint32_t packed_size = {qualify(metadata_namespace, 'packed_size_of')}({qualified_id(structure_telemetry)});\n"
         f"{tabstr}{TAB_CHARS}if (out.capacity() - out.size() < packed_size) {{\n"
         f"{tabstr}{TAB_CHARS * 2}out.reserve(packed_size);\n"
         f"{tabstr}{TAB_CHARS}}}\n"
@@ -1134,7 +1125,7 @@ def storage_type_of_template(
     for telemetry in telemetries:
         out += (
             f"template<>\n"
-            f"struct storage_type_of<{qualified_id(telemetry)}> : {qualify_name(metadata_namespace, name(telemetry), 'storage_type')} {{}};\n\n"
+            f"struct storage_type_of<{qualified_id(telemetry)}> : {qualify(metadata_namespace, name(telemetry), 'storage_type')} {{}};\n\n"
         )
 
     return out
