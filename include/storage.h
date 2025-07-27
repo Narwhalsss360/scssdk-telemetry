@@ -5,16 +5,6 @@
 #include <algorithm>
 #include <string>
 
-#ifndef __cpp_if_constexpr
-#define __cpp_if_constexpr 201606L
-#endif
-
-#if __cplusplus >= __cpp_if_constexpr
-#define ifconstexpr constexpr
-#else
-#define ifconstexpr
-#endif
-
 using trailer_index_uint = uint8_t;
 
 #pragma region constant expression utility
@@ -96,9 +86,9 @@ struct value_storage {
     }
 
     void append_bytes(std::vector<uint8_t>& out, const uint32_t& i = 0) const {
-        if ifconstexpr (i >= serialization_info::count) {
+        if (i >= serialization_info::count) {
             return;
-        } else if ifconstexpr (i == 0) {
+        } else if (i == 0) {
             if (out.capacity() - out.size() < packed_size()) {
                 out.reserve(out.size() + packed_size());
             }
@@ -111,10 +101,10 @@ struct value_storage {
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
         constexpr const uint32_t (&ordered_sizes)[serialization_info::count] = serialization_info::ordered_sizes;
-        if ifconstexpr (i >= serialization_info::count) {
+        if (i >= serialization_info::count) {
             read = packed_size();
             return true;
-        } else if ifconstexpr (i == 0) {
+        } else if (i == 0) {
             if (bytes.size() - offset < packed_size()) {
                 return false;
             }
@@ -219,9 +209,9 @@ struct value_array_storage {
     }
 
     void append_bytes(std::vector<uint8_t>& out, const uint32_t& i = 0) const {
-        if ifconstexpr (i >= serialization_info::count) {
+        if (i >= serialization_info::count) {
             return;
-        } else if ifconstexpr (i == 0) {
+        } else if (i == 0) {
             if (out.capacity() - out.size() < packed_size()) {
                 out.reserve(out.size() + packed_size());
             }
@@ -234,10 +224,10 @@ struct value_array_storage {
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
         constexpr const uint32_t (&ordered_sizes)[serialization_info::count] = serialization_info::ordered_sizes;
-        if ifconstexpr (i >= serialization_info::count) {
+        if (i >= serialization_info::count) {
             read = packed_size();
             return true;
-        } else if ifconstexpr (i == 0) {
+        } else if (i == 0) {
             if (bytes.size() - offset < packed_size()) {
                 return false;
             }
