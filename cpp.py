@@ -292,7 +292,7 @@ def telemetry_metadata_structs(
     out: str = f"{tabstr}namespace {namespace} {{\n"
     tabstr = TAB_CHARS * (tabcount + 1)
 
-    out += f"{metadata_value_struct(namespace, tabcount + 1)}\n"
+    out += f"{metadata_value_struct(namespace, tabcount + 1)}"
 
     for i, telemetry in enumerate(telemetries):
         out += (
@@ -302,20 +302,24 @@ def telemetry_metadata_structs(
             f"{tabstr}{TAB_CHARS}static constexpr const bool constant_size = {cpp_bool(telemetry.constant_size)};\n"
         )
 
+        if telemetry.is_structure and telemetry != master_telemetry():
+            out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
+        elif telemetry.is_event_info:
+            out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
+        elif telemetry.is_channel:
+            out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
+
         if telemetry == master_telemetry():
             out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t master_offset = 0;\n"
             out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = 0;\n"
         else:
-            parents: list[Telemetry | str] = telemetry.parents[:-1][::-1]
-            dot_notation: str = ""
-            if telemetry.is_channel and telemetry.as_channel.is_trailer_channel:
-                parents.append(f"{STD_ARRAYS_ELEMS}[0]")
+            out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t master_offset =\n"
+            parents: list[Telemetry] = telemetry.parents[::-1]
+            for ith_parent, parent in enumerate(parents[1:]):
+                container: str = qualify(*[type_name(inner_parent) for inner_parent in parents[:ith_parent + 1]])
+                out += f"{tabstr}{2 * TAB_CHARS}{offsetof(container, name(parent))} +\n"
 
-            for parent in parents:
-                dot_notation += f"{name(parent)}."
-            dot_notation += name(telemetry)
-
-            out += f"{tabstr}{TAB_CHARS}static constexpr const uint32_t master_offset = {offsetof(type_name(master_telemetry()), dot_notation)};\n"
+            out += f"{tabstr}{2 * TAB_CHARS}structure_offset;\n"
 
         if telemetry.is_structure:
             out += (
@@ -324,7 +328,6 @@ def telemetry_metadata_structs(
             )
             if telemetry != master_telemetry():
                 out += (
-                    f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify(*[type_name(parent) for parent in telemetry.parents][::-1]), name(telemetry))};\n"
                     f"{tabstr}{TAB_CHARS}static constexpr const metadata_value metadata_value = {namespace}::metadata_value(id, telemetry_type, constant_size, master_offset, structure_offset, storage_type_size);\n"
                 )
             else:
@@ -335,19 +338,18 @@ def telemetry_metadata_structs(
                 f"{tabstr}{TAB_CHARS}static constexpr const uint32_t storage_type_size = sizeof(storage_type);\n"
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro_identifier = "{telemetry.as_event_info.macro}";\n'
                 f'{tabstr}{TAB_CHARS}static constexpr const char* const macro = "{telemetry.as_event_info.expansion}";\n'
-                f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const metadata_value metadata_value = {namespace}::metadata_value(id, telemetry_type, constant_size, master_offset, structure_offset, storage_type_size, macro_identifier, macro);\n"
             )
 
             out += f"{tabstr}{TAB_CHARS}static constexpr const event_info_member members[] = {{\n"
-            for i, attribute in enumerate(telemetry.as_event_info.attributes):
-                out += f'{tabstr}{TAB_CHARS * 2}event_info_member({qualified_id(telemetry)}, "{attribute.macro}", "{attribute.expansion}", offsetof(storage_type, {name(attribute)}), {TYPE_MACROS_BY_ID[attribute.scs_type_id]}, {cpp_bool(attribute.indexed)})'
-                if i != len(telemetry.as_event_info.attributes) - 1:
+            for ith_attribute, attribute in enumerate(telemetry.as_event_info.attributes):
+                out += f'{tabstr}{TAB_CHARS * 2}event_info_member({qualified_id(telemetry)}, "{attribute.macro}", "{attribute.expansion}", {offsetof('storage_type', name(attribute))}, {TYPE_MACROS_BY_ID[attribute.scs_type_id]}, {cpp_bool(attribute.indexed)})'
+                if ith_attribute != len(telemetry.as_event_info.attributes) - 1:
                     out += ","
                 out += "\n"
             out += f"{tabstr}{TAB_CHARS}}};\n"
-            for i, attribute in enumerate(telemetry.as_event_info.attributes):
-                out += f"{tabstr}{TAB_CHARS}static constexpr const event_info_member {name(attribute)}_member_info = members[{i}];\n"
+            for ith_attribute, attribute in enumerate(telemetry.as_event_info.attributes):
+                out += f"{tabstr}{TAB_CHARS}static constexpr const event_info_member {name(attribute)}_member_info = members[{ith_attribute}];\n"
         elif telemetry.is_channel:
             out += (
                 f"{tabstr}{TAB_CHARS}using storage_type = {type_name(telemetry)};\n"
@@ -360,7 +362,6 @@ def telemetry_metadata_structs(
                 f"{tabstr}{TAB_CHARS}using scs_type = {telemetry.as_channel.scs_type};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const scs_value_type_t scs_type_id = {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]};\n"
                 f"{tabstr}{TAB_CHARS}using primitive_type = {telemetry.as_channel.primitive_type};\n"
-                f"{tabstr}{TAB_CHARS}static constexpr const uint32_t structure_offset = {offsetof(qualify_type_name(telemetry.parent_structure), name(telemetry))};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const bool custom_channel = {cpp_bool(is_custom_channel(telemetry.as_channel))};\n"
                 f"{tabstr}{TAB_CHARS}static constexpr const metadata_value metadata_value = {namespace}::metadata_value(id, telemetry_type, constant_size, master_offset, structure_offset, storage_type_size, macro_identifier, macro, indexed, max_count, trailer_channel, scs_type_id, custom_channel);\n"
             )
