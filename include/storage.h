@@ -71,43 +71,31 @@ struct value_storage {
         static_assert(countof(ordered_sizes) == countof(ordered_offsets), "sizes and offsets must be equal count");
     };
 
-    constexpr const size_t ordered_size(const uint32_t& i) const {
-        return serialization_info::ordered_sizes[i];
-    }
-
-    constexpr const uint8_t* const ordered_offset(const uint32_t& i) const {
-        return reinterpret_cast<const uint8_t* const>(this) + serialization_info::ordered_offsets[i];
-    }
-
-    constexpr uint8_t* const ordered_offset(const uint32_t& i) {
-        return reinterpret_cast<uint8_t* const>(this) + serialization_info::ordered_offsets[i];
-    }
-
-    constexpr const uint32_t packed_size() const {
-        return serialization_info::packed_size;
-    }
-
     void append_bytes(std::vector<uint8_t>& out, const uint32_t& i = 0) const {
         if (i >= serialization_info::member_count) {
             return;
         } else if (i == 0) {
-            if (out.capacity() - out.size() < packed_size()) {
-                out.reserve(out.size() + packed_size());
+            if (out.capacity() - out.size() < serialization_info::packed_size) {
+                out.reserve(out.size() + serialization_info::packed_size);
             }
         }
 
-        out.resize(out.size() + ordered_size(i));
-        std::copy(ordered_offset(i), ordered_offset(i) + ordered_size(i), out.end() - ordered_size(i));
+        out.resize(out.size() + serialization_info::ordered_sizes[i]);
+        std::copy(
+            reinterpret_cast<const uint8_t* const>(this) + serialization_info::ordered_offsets[i],
+            reinterpret_cast<const uint8_t* const>(this) + serialization_info::ordered_offsets[i] + serialization_info::ordered_sizes[i],
+            out.end() - serialization_info::ordered_sizes[i]
+        );
         append_bytes(out, i + 1);
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
         constexpr const uint32_t (&ordered_sizes)[serialization_info::member_count] = serialization_info::ordered_sizes;
         if (i >= serialization_info::member_count) {
-            read = packed_size();
+            read = serialization_info::packed_size;
             return true;
         } else if (i == 0) {
-            if (bytes.size() - offset < packed_size()) {
+            if (bytes.size() - offset < serialization_info::packed_size) {
                 return false;
             }
         }
@@ -115,7 +103,7 @@ struct value_storage {
         std::copy(
             bytes.cbegin() + offset + sum(ordered_sizes, i),
             bytes.cbegin() + offset + sum(ordered_sizes, i + 1),
-            ordered_offset(i)
+            reinterpret_cast<uint8_t* const>(this) + serialization_info::ordered_offsets[i]
         );
 
         return from_bytes(bytes, offset, read, i + 1);
@@ -135,10 +123,6 @@ struct value_storage<std::string> {
         static constexpr uint32_t packed_size = sizeof(initialized);
     };
 
-    constexpr const uint32_t packed_size() const {
-        return serialization_info::packed_size;
-    }
-
     void append_bytes(std::vector<uint8_t>& out) const {
         out.resize(out.size() + sizeof(initialized));
         const uint8_t* const& initialized_start = reinterpret_cast<const uint8_t* const>(&initialized);
@@ -148,7 +132,7 @@ struct value_storage<std::string> {
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
-        if (bytes.size() - offset < packed_size()) {
+        if (bytes.size() - offset < serialization_info::packed_size) {
             return false;
         }
 
@@ -194,43 +178,31 @@ struct value_array_storage {
         static_assert(countof(ordered_sizes) == countof(ordered_offsets), "sizes and offsets must be equal count");
     };
 
-    constexpr const size_t ordered_size(const uint32_t& i) const {
-        return serialization_info::ordered_sizes[i];
-    }
-
-    constexpr const uint8_t* const ordered_offset(const uint32_t& i) const {
-        return reinterpret_cast<const uint8_t* const>(this) + serialization_info::ordered_offsets[i];
-    }
-
-    constexpr uint8_t* const ordered_offset(const uint32_t& i) {
-        return reinterpret_cast<uint8_t* const>(this) + serialization_info::ordered_offsets[i];
-    }
-
-    constexpr const uint32_t packed_size() const {
-        return serialization_info::packed_size;
-    }
-
     void append_bytes(std::vector<uint8_t>& out, const uint32_t& i = 0) const {
         if (i >= serialization_info::member_count) {
             return;
         } else if (i == 0) {
-            if (out.capacity() - out.size() < packed_size()) {
-                out.reserve(out.size() + packed_size());
+            if (out.capacity() - out.size() < serialization_info::packed_size) {
+                out.reserve(out.size() + serialization_info::packed_size);
             }
         }
 
-        out.resize(out.size() + ordered_size(i));
-        std::copy(ordered_offset(i), ordered_offset(i) + ordered_size(i), out.end() - ordered_size(i));
+        out.resize(out.size() + serialization_info::ordered_sizes[i]);
+        std::copy(
+            reinterpret_cast<const uint8_t* const>(this) + serialization_info::ordered_offsets[i],
+            reinterpret_cast<const uint8_t* const>(this) + serialization_info::ordered_offsets[i] + serialization_info::ordered_sizes[i],
+            out.end() - serialization_info::ordered_sizes[i]
+        );
         append_bytes(out, i + 1);
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
         constexpr const uint32_t (&ordered_sizes)[serialization_info::member_count] = serialization_info::ordered_sizes;
         if (i >= serialization_info::member_count) {
-            read = packed_size();
+            read = serialization_info::packed_size;
             return true;
         } else if (i == 0) {
-            if (bytes.size() - offset < packed_size()) {
+            if (bytes.size() - offset < serialization_info::packed_size) {
                 return false;
             }
         }
@@ -238,7 +210,7 @@ struct value_array_storage {
         std::copy(
             bytes.cbegin() + offset + sum(ordered_sizes, i),
             bytes.cbegin() + offset + sum(ordered_sizes, i + 1),
-            ordered_offset(i)
+            reinterpret_cast<uint8_t* const>(this) + serialization_info::ordered_offsets[i]
         );
 
         return from_bytes(bytes, offset, read, i + 1);
@@ -259,10 +231,6 @@ struct value_array_storage<std::string, max_count> {
         static constexpr const uint32_t packed_size = sizeof(initialized) + sizeof(count);
     };
 
-    constexpr const uint32_t packed_size() const {
-        return serialization_info::packed_size;
-    }
-
     void append_bytes(std::vector<uint8_t>& out) const {
         out.resize(out.size() + sizeof(initialized) + sizeof(count));
         const uint8_t* const initialized_start = reinterpret_cast<const uint8_t* const>(&initialized);
@@ -276,7 +244,7 @@ struct value_array_storage<std::string, max_count> {
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
-        if (bytes.size() - offset < packed_size()) {
+        if (bytes.size() - offset < serialization_info::packed_size) {
             return false;
         }
 
@@ -320,10 +288,6 @@ struct value_vector_storage {
         static constexpr const uint32_t packed_size = sizeof(uint32_t);
     };
 
-    constexpr const uint32_t packed_size() const {
-        return serialization_info::packed_size;
-    }
-
     void append_bytes(std::vector<uint8_t>& out) const {
         const uint32_t lcount = count();
         const uint8_t* const& count_start = reinterpret_cast<const uint8_t* const>(&lcount);
@@ -340,7 +304,7 @@ struct value_vector_storage {
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
-        if (bytes.size() - offset < packed_size()) {
+        if (bytes.size() - offset < serialization_info::packed_size) {
             return false;
         }
 
@@ -372,10 +336,6 @@ struct value_vector_storage<std::string> {
         static constexpr const uint32_t packed_size = sizeof(uint32_t);
     };
 
-    constexpr const uint32_t packed_size() const {
-        return serialization_info::packed_size;
-    }
-
     void append_bytes(std::vector<uint8_t>& out) const {
         const uint32_t lcount = count();
         const uint8_t* const& count_start = reinterpret_cast<const uint8_t* const>(&lcount);
@@ -388,7 +348,7 @@ struct value_vector_storage<std::string> {
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
-        if (bytes.size() - offset < packed_size()) {
+        if (bytes.size() - offset < serialization_info::packed_size) {
             return false;
         }
 
@@ -431,10 +391,6 @@ struct value_vector_storage<bool> {
         static constexpr const uint32_t packed_size = sizeof(uint32_t);
     };
 
-    constexpr const uint32_t packed_size() const {
-        return serialization_info::packed_size;
-    }
-
     void append_bytes(std::vector<uint8_t>& out) const {
         const uint32_t lcount = count();
         const uint8_t* const& count_start = reinterpret_cast<const uint8_t* const>(&lcount);
@@ -457,7 +413,7 @@ struct value_vector_storage<bool> {
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
-        if (bytes.size() - offset < packed_size()) {
+        if (bytes.size() - offset < serialization_info::packed_size) {
             return false;
         }
 
