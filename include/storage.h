@@ -64,7 +64,7 @@ struct value_storage {
 
         static constexpr const uint32_t packed_size = sum(ordered_sizes);
 
-        static constexpr const uint32_t count = countof(ordered_sizes);
+        static constexpr const uint32_t member_count = countof(ordered_sizes);
 
         static_assert(countof(ordered_sizes) == countof(ordered_offsets), "sizes and offsets must be equal count");
     };
@@ -86,7 +86,7 @@ struct value_storage {
     }
 
     void append_bytes(std::vector<uint8_t>& out, const uint32_t& i = 0) const {
-        if (i >= serialization_info::count) {
+        if (i >= serialization_info::member_count) {
             return;
         } else if (i == 0) {
             if (out.capacity() - out.size() < packed_size()) {
@@ -100,8 +100,8 @@ struct value_storage {
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
-        constexpr const uint32_t (&ordered_sizes)[serialization_info::count] = serialization_info::ordered_sizes;
-        if (i >= serialization_info::count) {
+        constexpr const uint32_t (&ordered_sizes)[serialization_info::member_count] = serialization_info::ordered_sizes;
+        if (i >= serialization_info::member_count) {
             read = packed_size();
             return true;
         } else if (i == 0) {
@@ -187,7 +187,7 @@ struct value_array_storage {
 
         static constexpr const uint32_t packed_size = sum(ordered_sizes);
 
-        static constexpr const uint32_t count = countof(ordered_sizes);
+        static constexpr const uint32_t member_count = countof(ordered_sizes);
 
         static_assert(countof(ordered_sizes) == countof(ordered_offsets), "sizes and offsets must be equal count");
     };
@@ -209,7 +209,7 @@ struct value_array_storage {
     }
 
     void append_bytes(std::vector<uint8_t>& out, const uint32_t& i = 0) const {
-        if (i >= serialization_info::count) {
+        if (i >= serialization_info::member_count) {
             return;
         } else if (i == 0) {
             if (out.capacity() - out.size() < packed_size()) {
@@ -223,8 +223,8 @@ struct value_array_storage {
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read, const uint32_t& i = 0) {
-        constexpr const uint32_t (&ordered_sizes)[serialization_info::count] = serialization_info::ordered_sizes;
-        if (i >= serialization_info::count) {
+        constexpr const uint32_t (&ordered_sizes)[serialization_info::member_count] = serialization_info::ordered_sizes;
+        if (i >= serialization_info::member_count) {
             read = packed_size();
             return true;
         } else if (i == 0) {
