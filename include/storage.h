@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <string>
 
+#define serialization_namespace 
+
 using trailer_index_uint = uint8_t;
 
 #pragma region constant expression utility
@@ -142,7 +144,7 @@ struct value_storage<std::string> {
         const uint8_t* const& initialized_start = reinterpret_cast<const uint8_t* const>(&initialized);
 
         std::copy(initialized_start, initialized_start + sizeof(initialized), out.end() - sizeof(initialized));
-        ::append_bytes(value, out);
+        serialization_namespace::append_bytes(value, out);
     }
 
     bool from_bytes(const std::vector<uint8_t>& bytes, const uint32_t& offset, uint32_t& read) {
@@ -150,7 +152,7 @@ struct value_storage<std::string> {
             return false;
         }
 
-        if (!::from_bytes(bytes, value, read, offset + sizeof(bool))) {
+        if (!serialization_namespace::from_bytes(bytes, value, read, offset + sizeof(bool))) {
             return false;
         }
 
@@ -269,7 +271,7 @@ struct value_array_storage<std::string, max_count> {
         std::copy(initialized_start, initialized_start + sizeof(initialized), out.end() - sizeof(count) - sizeof(initialized));
         std::copy(count_start, count_start + sizeof(initialized), out.end() - sizeof(count));
         for (const std::string& string : values) {
-            ::append_bytes(string, out);
+            serialization_namespace::append_bytes(string, out);
         }
     }
 
@@ -291,7 +293,7 @@ struct value_array_storage<std::string, max_count> {
         read = 0;
         uint32_t this_str = 0;
         for (uint32_t i = 0; i < max_count; i++) {
-            if (!::from_bytes(bytes, values[i], this_str, str_offset + read)) {
+            if (!serialization_namespace::from_bytes(bytes, values[i], this_str, str_offset + read)) {
                 return false;
             }
             read += this_str;
@@ -381,7 +383,7 @@ struct value_vector_storage<std::string> {
         out.resize(out.size() + sizeof(lcount));
         std::copy(count_start, count_start + sizeof(lcount), out.end() - sizeof(lcount));
         for (const std::string& value : values) {
-            ::append_bytes(value, out);
+            serialization_namespace::append_bytes(value, out);
         }
     }
 
@@ -400,7 +402,7 @@ struct value_vector_storage<std::string> {
         read = 0;
         uint32_t this_str = 0;
         for (uint32_t i = 0; i < count; i++) {
-            if (!::from_bytes(bytes, values[i], this_str, str_offset + read)) {
+            if (!serialization_namespace::from_bytes(bytes, values[i], this_str, str_offset + read)) {
                 return false;
             }
             read += this_str;
