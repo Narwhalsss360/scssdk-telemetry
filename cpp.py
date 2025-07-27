@@ -13,9 +13,7 @@ from truckconnect import (
 from scssdk_dataclasses import (
     Channel,
     Event,
-    EventInfo,
     EventAttribute,
-    load,
     TYPE_SIZE_BY_ID,
     TYPE_MACROS_BY_ID,
     SCS_TELEMETRY_trailers_count,
@@ -87,8 +85,9 @@ def attribute_storage(attribute: EventAttribute) -> str:
 
 def storage(telemetry_or_attr: Telemetry | EventAttribute) -> tuple[str, int]:
     if is_attribute(telemetry_or_attr):
-        return attribute_storage(telemetry_or_attr), None
-    elif telemetry_or_attr.is_channel:
+        assert isinstance(telemetry_or_attr, EventAttribute)
+        return attribute_storage(telemetry_or_attr), 0
+    elif isinstance(telemetry_or_attr, Telemetry) and telemetry_or_attr.is_channel:
         return channel_storage(telemetry_or_attr.as_channel)
 
     assert False, "Can only get storage of a channel or event attribute"
@@ -96,12 +95,16 @@ def storage(telemetry_or_attr: Telemetry | EventAttribute) -> tuple[str, int]:
 
 def type_name(telemetry_or_attr: Telemetry | EventAttribute) -> str:
     if is_attribute(telemetry_or_attr):
+        assert isinstance(telemetry_or_attr, EventAttribute)
         return attribute_storage(telemetry_or_attr)
+
+    assert isinstance(telemetry_or_attr, Telemetry)
     if telemetry_or_attr.is_structure:
         return telemetry_or_attr.as_structure.type_name
-    if telemetry_or_attr.is_event_info:
+    elif telemetry_or_attr.is_event_info:
         return f"{name(telemetry_or_attr.parent_structure)}_{telemetry_or_attr.as_event_info.simple_name}_storage"
-    if telemetry_or_attr.is_channel:
+    else:
+        assert telemetry_or_attr.is_channel
         return channel_storage(telemetry_or_attr.as_channel)[0]
 
 
@@ -760,10 +763,10 @@ def metadata_value_of_function(telemetries: list[Telemetry], tabcount: int = 0) 
 
 def indicize_trailer_telemetry_expansion(telemetry: Telemetry, index: int) -> str:
     assert 0 <= index < SCS_TELEMETRY_trailers_count, "index out of range"
-    assert telemetry.is_channel or telemetry.is_event_info, (
+    assert (telemetry.is_channel or telemetry.is_event_info) and telemetry.expansion is not None, (
         "trailer is only a channel or event info"
     )
-    return telemetry._telemetry.expansion.replace("trailer", f"trailer.{index}")
+    return telemetry.expansion.replace("trailer", f"trailer.{index}")
 
 
 def registration_for(
@@ -801,6 +804,7 @@ def registration_for(
         else:
             out = f"{tabstr}register_for_channel({telemetry.as_channel.macro}, SCS_U32_NIL, {TYPE_MACROS_BY_ID[telemetry.as_channel.scs_type_id]}, SCS_TELEMETRY_CHANNEL_FLAG_none, {channel_callback}<{metadata_namespace}::{name(telemetry)}>, nullptr);\n"
     else:
+        assert isinstance(telemetry.as_structure.data, Event)
         out = f"{tabstr}register_for_event({telemetry.as_structure.data.macro}, {event_callack}<{metadata_namespace}::{name(telemetry)}>, nullptr);\n"
 
     return out
@@ -880,7 +884,7 @@ def from_bytes_function(
     structure_telemetry: Telemetry,
     metadata_namespace: str = "metadata",
     tabcount: int = 0,
-) -> tuple[tuple[str], str]:
+) -> tuple[tuple[str, ...], str]:
     assert not isinstance(structure_telemetry, list), (
         "wrong function, did you mean the plural one?"
     )
@@ -978,7 +982,7 @@ def from_bytes_functions(
     telemetries: list[Telemetry],
     metadata_namespace: str = "metadata",
     tabcount: int = 0,
-) -> tuple[str]:
+) -> tuple[str, str]:
     implout: str = ""
     dependency_sorted: list[Telemetry] = list(
         filter(lambda t: t.is_structure or t.is_event_info, telemetries[::-1])
