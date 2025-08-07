@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 from enum import Enum
 from dataclasses import dataclass, field, asdict, fields
 from copy import deepcopy
@@ -8,16 +9,13 @@ from scssdk_dataclasses import (
     EventInfo,
     EventAttribute,
     load,
-    TYPE_SIZE_BY_ID,
-    TYPE_MACROS_BY_ID,
-    SCS_TELEMETRY_trailers_count,
     id_of_type
 )
 import json
 
 # region Constants
 TRUCKCONNECT_TELEMETRY_FILE: str = "truckconnect_telemetry.json"
-TELEMETRY_EVENTS: str = [
+TELEMETRY_EVENTS: list[str] = [
     "SCS_TELEMETRY_EVENT_configuration",
     "SCS_TELEMETRY_EVENT_gameplay",
 ]
@@ -45,11 +43,25 @@ def is_custom_channel(channel: Channel | Telemetry) -> bool:
 
 
 def name(telemetry_or_attr_str: Telemetry | EventAttribute | str) -> str:
-    if is_attribute(telemetry_or_attr_str):
-        return telemetry_or_attr_str.simple_name
     if isinstance(telemetry_or_attr_str, str):
         return telemetry_or_attr_str
-    return telemetry_or_attr_str.name
+
+    if is_attribute(telemetry_or_attr_str):
+        assert telemetry_or_attr_str.simple_name is not None
+        return telemetry_or_attr_str.simple_name
+
+    assert isinstance(telemetry_or_attr_str, Telemetry)
+    if telemetry_or_attr_str._telemetry is None:
+        return telemetry_or_attr_str.name
+
+    if telemetry_or_attr_str.is_structure:
+        return telemetry_or_attr_str.as_structure.name
+    elif telemetry_or_attr_str.is_event_info:
+        assert telemetry_or_attr_str.as_event_info.event is not None
+        return f"{telemetry_or_attr_str.as_event_info.event.simple_name}_{telemetry_or_attr_str.as_event_info.simple_name}_info"
+    elif telemetry_or_attr_str.is_channel:
+        return telemetry_or_attr_str.as_channel.simple_name
+    assert False, "Unreachable"
 
 
 # endregion
@@ -90,6 +102,7 @@ class TelemetryType(Enum):
                 return "telemetry_type::event_info"
             case TelemetryType.Channel:
                 return "telemetry_type::channel"
+        assert False, "Unreachable"
 
     @staticmethod
     def from_name(name: str) -> TelemetryType:
@@ -127,7 +140,9 @@ class Structure:
     @property
     def name(self) -> str:
         if self.is_event:
+            assert isinstance(self.data, Event)
             return self.data.simple_name
+        assert isinstance(self.data, str)
         return self.data
 
     @property
@@ -135,7 +150,7 @@ class Structure:
         return f"{self.name}_storage"
 
 
-INVALID_TELEMETRY_DATA: Channel = Structure(None, None)
+INVALID_TELEMETRY_DATA: Structure = Structure(Event("", "", "", []), [])
 
 
 @dataclass
@@ -169,14 +184,22 @@ class Telemetry:
         if isinstance(self.telemetry_type, str):
             self.telemetry_type = TelemetryType.from_name(self.telemetry_type)
 
-        if self.attributes or []:
+        if self.attributes:
             for i in range(len(self.attributes)):
-                self.attributes[i] = EventAttribute(**self.attributes[i])
-        if self.children or []:
+                event_attr = self.attributes[i]
+                assert isinstance(event_attr, dict)
+                kv_pairs: dict[str, Any] = event_attr
+                self.attributes[i] = EventAttribute(**kv_pairs)
+        if self.children:
             for i in range(len(self.children)):
-                self.children[i] = Telemetry(**self.children[i])
+                child = self.children[i]
+                assert isinstance(child, dict)
+                kv_pairs: dict[str, Any] = child
+                self.children[i] = Telemetry(**child)
         if self.event:
-            self.event = Event(**self.event, event_infos=[])
+            event = self.event
+            assert isinstance(event, dict)
+            self.event = Event(**event, event_infos=[])
 
     def apply_parent_structure(self, parent: Telemetry) -> None:
         assert parent.is_structure, "Parent structure must be set."
@@ -207,6 +230,7 @@ class Telemetry:
     def as_channel(self) -> Channel:
         assert self.is_channel, "Requested Channel, but telemetry was not"
         if self._telemetry is not None:
+            assert isinstance(self._telemetry, Channel)
             return self._telemetry
         return self
 
@@ -220,6 +244,7 @@ class Telemetry:
     def as_event_info(self) -> EventInfo:
         assert self.is_event_info, "Requested EventInfo, but telemetry was not"
         if self._telemetry is not None:
+            assert isinstance(self._telemetry, EventInfo)
             return self._telemetry
         return self
 
@@ -234,6 +259,7 @@ class Telemetry:
     def as_structure(self) -> Structure:
         assert self.is_structure, "Requested Structure, but telemetry was not"
         if self._telemetry is not INVALID_TELEMETRY_DATA:
+            assert isinstance(self._telemetry, Structure)
             return self._telemetry
         return self
 
@@ -245,15 +271,11 @@ class Telemetry:
             return 1
         elif self.is_channel:
             return 2
+        assert False, "Unreachable"
 
     @property
     def name(self) -> str:
-        if self.is_structure:
-            return self.as_structure.name
-        elif self.is_event_info:
-            return f"{self.as_event_info.event.simple_name}_{self.as_event_info.simple_name}_info"
-        elif self.is_channel:
-            return self.as_channel.simple_name
+        return self.identifier
 
     @property
     def scs_type_id(self) -> int:
@@ -291,7 +313,7 @@ class Telemetry:
     @staticmethod
     def unbuilt(telemetry: Channel | EventInfo | Structure) -> Telemetry:
         unbuilt: Telemetry = Telemetry(
-            INVALID_TELEMETRY_DATA, TelemetryType.Channel, False, ""
+            INVALID_TELEMETRY_ID, TelemetryType.Channel, False, ""
         )
         unbuilt.telemetry_type = TelemetryType.Invalid
         unbuilt._telemetry = telemetry
@@ -305,14 +327,18 @@ class Telemetry:
         trailer_structure: Telemetry = Telemetry.unbuilt(Structure("trailer", []))
 
         for channel_telemetry in Telemetry._load_channel_telemetries(channels):
+            assert isinstance(channel_telemetry._telemetry, Channel)
             match ChannelCategory.of(channel_telemetry._telemetry):
                 case ChannelCategory.General:
+                    assert isinstance(general_structure._telemetry, Structure)
                     general_structure._telemetry.children.append(channel_telemetry)
                     channel_telemetry.apply_parent_structure(general_structure)
                 case ChannelCategory.Truck:
+                    assert isinstance(truck_structure._telemetry, Structure)
                     truck_structure._telemetry.children.append(channel_telemetry)
                     channel_telemetry.apply_parent_structure(truck_structure)
                 case ChannelCategory.Trailer:
+                    assert isinstance(trailer_structure._telemetry, Structure)
                     trailer_structure._telemetry.children.append(channel_telemetry)
                     channel_telemetry.apply_parent_structure(trailer_structure)
                 case _:
@@ -388,8 +414,9 @@ class Telemetry:
 
     @staticmethod
     def dict_factory(telemetry: Telemetry) -> dict:
+        assert telemetry._telemetry is not None, "This method is only available for built, not loaded telemetries"
         as_dict: dict = {}
-        names: list[str] = Telemetry.COMMON_FIELDS + (
+        names: tuple = Telemetry.COMMON_FIELDS + (
             tuple()
             if telemetry.is_structure
             else tuple(field.name for field in fields(telemetry._telemetry))
@@ -400,15 +427,18 @@ class Telemetry:
 
         if telemetry.is_structure:
             if telemetry.is_structure and telemetry.as_structure.is_event:
+                assert isinstance(telemetry.as_structure.data, Event)
                 as_dict["event"] = asdict(telemetry.as_structure.data)
                 del as_dict["event"]["event_infos"]
             children = as_dict["children"] = []
             for child in telemetry.as_structure.children:
                 children.append(Telemetry.dict_factory(child))
         elif telemetry.is_event_info:
-            attributes: list[Telemetry] = as_dict["attributes"]
+            attributes: list[Telemetry | dict] = as_dict["attributes"]
             for i in range(len(attributes)):
-                attributes[i] = asdict(attributes[i])
+                attribute = attributes[i]
+                assert isinstance(attribute, Telemetry)
+                attributes[i] = asdict(attribute)
 
         return as_dict
 
@@ -417,12 +447,12 @@ class Telemetry:
 
 
 class TelemetryJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Telemetry):
-            return Telemetry.dict_factory(obj)
-        elif isinstance(obj, TelemetryType):
-            return obj.name
-        return super().default(obj)
+    def default(self, o):
+        if isinstance(o, Telemetry):
+            return Telemetry.dict_factory(o)
+        elif isinstance(o, TelemetryType):
+            return o.name
+        return super().default(o)
 
 
 # endregion
@@ -469,7 +499,7 @@ def configuration_trailer_structure_telemetry() -> Telemetry:
 def flatten_master(master_telemetry: Telemetry) -> list[Telemetry]:
     flattened: list[Telemetry] = []
 
-    def recurse(telemetry: Telemetry) -> list[Telemetry]:
+    def recurse(telemetry: Telemetry) -> None:
         flattened.append(telemetry)
         if telemetry.is_structure:
             for child in telemetry.as_structure.children:
@@ -491,6 +521,7 @@ def prepare_distributable(master_telemetry: Telemetry) -> dict:
 
         if telemetry.is_structure:
             if telemetry.as_structure.is_event:
+                assert isinstance(telemetry.as_structure.data, Event)
                 telemetry_data["event"] = asdict(telemetry.as_structure.data)
                 del telemetry_data["event"]["event_infos"]
             telemetry_data["children"] = [
