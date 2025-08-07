@@ -1,16 +1,18 @@
 from pathlib import Path
-from scssdk_dataclasses import Event, EventAttribute, SCS_TELEMETRY_trailers_count
+from scssdk_dataclasses import (
+    EventAttribute,
+    SCS_TELEMETRY_trailers_count,
+    TYPE_MACROS_BY_ID
+)
 from truckconnect import (
     Telemetry,
     name,
     is_custom_channel,
-    is_attribute,
     TelemetryType,
     build_telemetries,
     master_telemetry,
     trailer_structure_telemetry,
     configuration_trailer_structure_telemetry,
-    TYPE_MACROS_BY_ID,
     Channel
 )
 import truckconnect

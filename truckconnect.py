@@ -34,11 +34,13 @@ def is_attribute(telemetry_or_attr: Telemetry | EventAttribute) -> bool:
 
 
 def as_custom_channel(channel: Channel) -> Channel:
-    channel._is_custom = None
+    setattr(channel, "_is_custom", None)
     return channel
 
 
-def is_custom_channel(channel: Channel) -> bool:
+def is_custom_channel(channel: Channel | Telemetry) -> bool:
+    if isinstance(channel, Telemetry):
+        return channel.custom_channel
     return hasattr(channel, "_is_custom")
 
 
@@ -153,7 +155,7 @@ class Telemetry:
     simple_name: str | None = field(default=None)
     is_trailer_channel: bool | None = field(default=None)
     max_count: int | None = field(default=None)
-    custom_channel: bool | None = field(default=None)
+    custom_channel: bool = field(default=False)
 
     def __post_init__(self) -> None:
         self._telemetry: Channel | EventInfo | Structure | None = INVALID_TELEMETRY_DATA
@@ -271,6 +273,8 @@ class Telemetry:
         return True
 
     def _apply_properties(self) -> None:
+        assert self._telemetry is not None
+
         for field in fields(self._telemetry):
             setattr(self, field.name, getattr(self._telemetry, field.name))
         self.identifier = name(self)
@@ -281,6 +285,8 @@ class Telemetry:
                 self.telemetry_type = TelemetryType.EventInfo
             else:
                 self.telemetry_type = TelemetryType.Channel
+        if self.is_channel:
+            self.custom_channel = is_custom_channel(self.as_channel)
 
     @staticmethod
     def unbuilt(telemetry: Channel | EventInfo | Structure) -> Telemetry:
@@ -520,7 +526,7 @@ def main() -> None:
     telemetries: list[Telemetry] = build_telemetries()
     print(f"Built {len(telemetries)} telemetries.")
     with open(TRUCKCONNECT_TELEMETRY_FILE, "w", encoding="utf-8") as f:
-        f.write(json.dumps(master_telemetry(), indent=4, cls=TelemetryJSONEncoder))
+        f.write(json.dumps(prepare_distributable(master_telemetry()), indent=4, cls=TelemetryJSONEncoder))
 
 
 if __name__ == "__main__":
