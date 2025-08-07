@@ -22,27 +22,6 @@ from scssdk_dataclasses import (
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
 TAB_CHARS: str = "\t"
 
-# region Important telemetry caching
-__master_telemetry__: Telemetry | None = None
-__trailer_structure_telemetry__: Telemetry | None = None
-__configuration_trailer_structure_telemetry__: Telemetry | None = None
-
-
-def cache_telemetries(telemetries: list[Telemetry]) -> list[Telemetry]:
-    global __master_telemetry__
-    global __trailer_structure_telemetry__
-    global __configuration_trailer_structure_telemetry__
-    __master_telemetry__ = telemetries[0]
-    __trailer_structure_telemetry__ = next(
-        filter(lambda t: name(t) == "trailer", telemetries)
-    )
-    __configuration_trailer_structure_telemetry__ = next(
-        filter(lambda t: name(t) == "configuration_trailer_info", telemetries)
-    )
-    return telemetries
-
-
-# endregion
 
 VALUE_STORAGE_TYPE_NAME: str = "value_storage"
 VALUE_STORAGE_EXTRA_SIZE: int = 1
