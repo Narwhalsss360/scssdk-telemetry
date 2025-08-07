@@ -38,6 +38,9 @@ CS_TYPE_BY_ID: list[str] = [
 ]
 
 
+telemetries = truckconnect.telemetries()
+
+
 def pascalify_snake(identifier: str) -> str:
     if not identifier:
         return identifier
@@ -288,7 +291,6 @@ def generate(telemetries: list[Telemetry]) -> dict[str, str]:
 
 
 def main() -> None:
-    telemetries: list[Telemetry] = build_telemetries()
     print(f"Loaded {len(telemetries)} telemetries.")
     if not OUTPUT_FOLDER.exists():
         OUTPUT_FOLDER.mkdir()

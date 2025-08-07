@@ -554,13 +554,36 @@ def build_telemetries() -> list[Telemetry]:
     return cache_telemetries(Telemetry.build(channels, events))
 
 
+
+__telemetries__: list[Telemetry] | None = None
+
+
+def telemetries() -> list[Telemetry]:
+    assert __telemetries__ is not None, "The module has been improperly loaded."
+    return __telemetries__
+
+
+def telemetry(telemetry_id: int) -> Telemetry:
+    if telemetry_id >= len(telemetries()):
+        raise IndexError
+    return telemetries()[telemetry_id]
+
+
 def main() -> None:
-    telemetries: list[Telemetry] = build_telemetries()
-    print(f"Built {len(telemetries)} telemetries.")
+    global __telemetries__
+    __telemetries__ = build_telemetries()
+    print(f"Built {len(telemetries())} telemetries.")
     with open(TRUCKCONNECT_TELEMETRY_FILE, "w", encoding="utf-8") as f:
         f.write(json.dumps(prepare_distributable(master_telemetry()), indent=4, cls=TelemetryJSONEncoder))
+
+
+def module_main() -> None:
+    global __telemetries__
+    __telemetries__ = build_telemetries()
 
 
 if __name__ == "__main__":
     if retval := main():
         print(retval)
+else:
+    module_main()

@@ -10,6 +10,7 @@ from truckconnect import (
     trailer_structure_telemetry,
     configuration_trailer_structure_telemetry,
 )
+import truckconnect
 from scssdk_dataclasses import (
     Channel,
     Event,
@@ -30,6 +31,9 @@ VALUE_ARRAY_STORAGE_EXTRA_SIZE: int = 1 + 4
 VALUE_VECTOR_STORAGE_TYPE_NAME: str = "value_vector_storage"
 TELEMETRY_ID_ENUM_TYPE_NAME: str = "telemetry_id"
 TELEMETRY_ID_ENUM_BASE_TYPE: str = "uint8_t"
+
+
+telemetries = truckconnect.telemetries()
 
 
 def use_std_string(cpp_type: str) -> str:
@@ -1206,7 +1210,6 @@ def generate(telemetries: list[Telemetry]) -> dict[str, str]:
 
 
 def main() -> None:
-    telemetries: list[Telemetry] = build_telemetries()
     print(f"Loaded {len(telemetries)} telemetries.")
     if not OUTPUT_FOLDER.exists():
         OUTPUT_FOLDER.mkdir()
