@@ -14,7 +14,7 @@ from scssdk_dataclasses import (
 import json
 
 # region Constants
-TRUCKCONNECT_TELEMETRY_FILE: str = "truckconnect_telemetry.json"
+TRUCKCONNECT_TELEMETRY_FILE: str = "truckconnect_master_telemetry.json"
 TELEMETRY_EVENTS: list[str] = [
     "SCS_TELEMETRY_EVENT_configuration",
     "SCS_TELEMETRY_EVENT_gameplay",
@@ -23,6 +23,7 @@ EXCLUDE_CHANNELS: dict[str, str] = {  # macro and reason
     "SCS_TELEMETRY_TRUCK_CHANNEL_adblue_average_consumption": "prism::sdk does not find this channel."
 }
 INVALID_TELEMETRY_ID: int = -1
+VERSION: str = "0.1.0"
 # endregion
 
 
@@ -537,8 +538,8 @@ def prepare_distributable(master_telemetry: Telemetry) -> dict:
         return telemetry_data
 
     return {
-        "version": "0.1.0",
-        "telemetries": recurse(master_telemetry),
+        "version": VERSION,
+        "master_telemetry": recurse(master_telemetry),
     }
 
 
