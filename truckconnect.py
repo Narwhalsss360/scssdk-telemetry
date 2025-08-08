@@ -13,6 +13,44 @@ from scssdk_dataclasses import (
 )
 import json
 
+@dataclass
+class Version:
+    patch: int
+    minor: int
+    major: int
+
+    def __post_init__(self) -> None:
+        if not (0 <= self.patch <= 255) or not (0 <= self.minor <= 255) or not (0 <= self.major <= 255):
+            raise ValueError("Version values fit within an unsigned 8-bit width")
+
+    @staticmethod
+    def from_int(version_int: int) -> Version:
+        if version_int < 0 or version_int > 2 ** 32:
+            raise ValueError
+        return Version(version_int & 0xFF, (version_int >> 8) & 0xFF, (version_int >> 16) & 0xFF)
+
+    def to_int(self) -> int:
+        return self.patch | self.minor << 8 | self.major << 16
+
+    def __int__(self) -> int:
+        return self.to_int()
+
+    def __str__(self) -> str:
+        return f"{self.patch}.{self.minor}.{self.major}"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def __eq__(self, value: object, /) -> bool:
+        if not isinstance(value, Version):
+            return False
+
+        return (
+            self.patch == value.patch and
+            self.minor == value.minor and
+            self.major == value.major
+        )
+
 # region Constants
 TRUCKCONNECT_TELEMETRY_FILE: str = "truckconnect_master_telemetry.json"
 TELEMETRY_EVENTS: list[str] = [
@@ -23,7 +61,7 @@ EXCLUDE_CHANNELS: dict[str, str] = {  # macro and reason
     "SCS_TELEMETRY_TRUCK_CHANNEL_adblue_average_consumption": "prism::sdk does not find this channel."
 }
 INVALID_TELEMETRY_ID: int = -1
-VERSION: str = "0.1.0"
+VERSION: Version = Version(0, 1, 0)
 # endregion
 
 
