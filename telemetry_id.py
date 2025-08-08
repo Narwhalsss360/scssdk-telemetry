@@ -128,3 +128,4 @@ class TelemetryID(enum.Enum):
 	TruckChannelWheelRotation = 123
 	TruckChannelWheelLift = 124
 	TruckChannelWheelLiftOffset = 125
+	Invalid = -1

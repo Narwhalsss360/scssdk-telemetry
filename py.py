@@ -1,5 +1,5 @@
 from pathlib import Path
-from truckconnect import name, telemetries
+from truckconnect import INVALID_TELEMETRY_ID, name, telemetries
 from csharp import pascalify_snake
 
 
@@ -14,6 +14,7 @@ def telemetry_id() -> str:
     )
     for i, telemetry in enumerate(telemetries()):
         out += f"{TAB_CHARS}{pascalify_snake(name(telemetry))} = {i}\n"
+    out += f"{TAB_CHARS}Invalid = {INVALID_TELEMETRY_ID}\n"
     return out
 
 
