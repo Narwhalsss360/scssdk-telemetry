@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Callable, Any
 from dataclasses import dataclass, field
 from scssdk_dataclasses import TYPE_SIZE_BY_ID
 from struct import calcsize, unpack_from
@@ -11,8 +12,8 @@ class SCSValueFVector:
     z: float = field(default=0)
 
     @staticmethod
-    def from_bytes(buffer, offset: int = 0) -> SCSValueFVector:
-        return SCSValueFVector(*unpack_from("=fff", buffer, offset))
+    def from_bytes(buffer, offset: int = 0) -> tuple[SCSValueFVector, int]:
+        return SCSValueFVector(*unpack_from("=fff", buffer, offset)), TYPE_SIZE_BY_ID[7]
 
     @staticmethod
     def size() -> int:
@@ -26,8 +27,8 @@ class SCSValueDVector:
     z: float = field(default=0)
 
     @staticmethod
-    def from_bytes(buffer, offset: int = 0) -> SCSValueDVector:
-        return SCSValueDVector(*unpack_from("=ddd", buffer, offset))
+    def from_bytes(buffer, offset: int = 0) -> tuple[SCSValueDVector, int]:
+        return SCSValueDVector(*unpack_from("=ddd", buffer, offset)), TYPE_SIZE_BY_ID[8]
 
     @staticmethod
     def size() -> int:
@@ -40,8 +41,8 @@ class SCSValueEuler:
     roll: float = field(default=0)
 
     @staticmethod
-    def from_bytes(buffer, offset: int = 0) -> SCSValueEuler:
-        return SCSValueEuler(*unpack_from("=fff", buffer, offset))
+    def from_bytes(buffer, offset: int = 0) -> tuple[SCSValueEuler, int]:
+        return SCSValueEuler(*unpack_from("=fff", buffer, offset)), TYPE_SIZE_BY_ID[9]
 
     @staticmethod
     def size() -> int:
@@ -53,8 +54,10 @@ class SCSValueFPlacement:
     orientation: SCSValueEuler = field(default_factory=SCSValueEuler)
 
     @staticmethod
-    def from_bytes(buffer, offset: int = 0) -> SCSValueFPlacement:
-        return SCSValueFPlacement(SCSValueFVector.from_bytes(buffer, offset),  SCSValueEuler(buffer, offset + TYPE_SIZE_BY_ID[SCSValueFVector.size()]))
+    def from_bytes(buffer, offset: int = 0) -> tuple[SCSValueFPlacement, int]:
+        position, position_read = SCSValueFVector.from_bytes(buffer, offset)
+        orientation, orientation_read = SCSValueEuler.from_bytes(buffer, offset + position_read)
+        return SCSValueFPlacement(position, orientation), position_read + orientation_read
 
 @dataclass
 class SCSValueDPlacement:
@@ -62,21 +65,29 @@ class SCSValueDPlacement:
     orientation: SCSValueEuler = field(default_factory=SCSValueEuler)
 
     @staticmethod
-    def from_bytes(buffer, offset: int = 0) -> SCSValueDPlacement:
-        return SCSValueDPlacement(SCSValueDVector.from_bytes(buffer, offset),  SCSValueEuler(buffer, offset + TYPE_SIZE_BY_ID[SCSValueDVector.size()]))
+    def from_bytes(buffer, offset: int = 0) -> tuple[SCSValueDPlacement, int]:
+        position, position_read = SCSValueDVector.from_bytes(buffer, offset)
+        orientation, orientation_read = SCSValueEuler.from_bytes(buffer, offset + position_read)
+        return SCSValueDPlacement(position, orientation), position_read + orientation_read
 
 
-def szstr_from_bytes(buffer, offset: int = 0) -> str:
-    end: int = len(buffer)
+def szstr_from_bytes(buffer, offset: int = 0) -> tuple[str, int]:
+    if len(buffer) == offset:
+        raise ValueError("Offset out of bounds")
+
+    if buffer[offset] == 0:
+        return "", 1
+
+    end: int = offset
     for i, c in enumerate(buffer[offset:]):
         if c == 0:
-            end = i
+            end = offset + i
             break
 
-    if end == len(buffer):
+    if end == offset:
         raise ValueError("Non-null terminated string")
 
-    return bytes(buffer[offset:end + 1]).decode()
+    return bytes(buffer[offset:end]).decode(), end - offset + 1
 
 
 type ValueTypes = bool | int | float | SCSValueFVector | SCSValueDVector | SCSValueEuler | SCSValueFPlacement | SCSValueDPlacement | str
@@ -100,7 +111,7 @@ UNPACK_SPEC_BY_ID: list[str] = [
 ]
 
 
-FROM_BYTES_BY_ID: list = [
+FROM_BYTES_BY_ID: list[None | Callable[[Any, int], tuple[ValueTypes, int]]] = [
     None,
     None,
     None,
@@ -118,17 +129,16 @@ FROM_BYTES_BY_ID: list = [
 ]
 
 
-def value_from_bytes(scs_value_type: int, buffer, offset: int = 0) -> ValueTypes:
-    if UNPACK_SPEC_BY_ID[scs_value_type]:
-        return unpack_from(f"={UNPACK_SPEC_BY_ID[scs_value_type]}", buffer, offset)[0]
-
-    if FROM_BYTES_BY_ID[scs_value_type]:
-        return FROM_BYTES_BY_ID[scs_value_type](buffer, offset)
-
+def value_from_bytes(scs_value_type: int, buffer, offset: int = 0) -> tuple[ValueTypes, int]:
+    if unpack_spec := UNPACK_SPEC_BY_ID[scs_value_type]:
+        return unpack_from(f"={unpack_spec}", buffer, offset)[0], TYPE_SIZE_BY_ID[scs_value_type]
+    if (deserializer := FROM_BYTES_BY_ID[scs_value_type]) is not None:
+        return deserializer(buffer, offset)
     raise ValueError("invalid scs value type")
 
 
-def value_storage_from_bytes(scs_value_type: int, buffer, offset: int = 0) -> tuple[bool, ValueTypes]:
+def value_storage_from_bytes(scs_value_type: int, buffer, offset: int = 0) -> tuple[tuple[bool, ValueTypes], int]:
     if offset == len(buffer):
         raise ValueError("offset out of bounds.")
-    return buffer[offset] > 0, value_from_bytes(scs_value_type, buffer, offset + 1)
+    value, read = value_from_bytes(scs_value_type, buffer, offset + 1)
+    return (buffer[offset] > 0, value), read + 1

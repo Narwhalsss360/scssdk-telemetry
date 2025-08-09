@@ -205,7 +205,7 @@ def main() -> None:
     while time() - start_time < duration:
         connection.send_request_for(TelemetryID.ChannelPaused)
         connection.receive_for_request(TelemetryID.ChannelPaused)
-        _, paused = value_storage_from_bytes(
+        (_, paused), _ = value_storage_from_bytes(
             id_of_type("bool"),
             connection.collector.bytearray,
             Connection.TELEMETRY_DATA_START
@@ -215,7 +215,7 @@ def main() -> None:
         else:
             connection.send_request_for(TelemetryID.ChannelGameTime)
             connection.receive_for_request(TelemetryID.ChannelGameTime)
-            initialized, game_time = value_storage_from_bytes(
+            (initialized, game_time), _ = value_storage_from_bytes(
                 id_of_type("u32"),
                 connection.collector.bytearray,
                 Connection.TELEMETRY_DATA_START
