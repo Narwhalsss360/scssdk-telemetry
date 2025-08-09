@@ -3,10 +3,11 @@ from enum import Enum
 from socket import socket, AddressFamily, SocketKind, IPPROTO_TCP
 from dataclasses import dataclass
 from nstreamcom import Collector, encode_with_size
-from truckconnect import INVALID_TELEMETRY_ID, Telemetry, Version, VERSION, telemetry
+from scssdk_dataclasses import id_of_type
+from truckconnect import Version, VERSION
 from telemetry_id import TelemetryID
 from time import sleep, time
-from struct import unpack_from
+from value_storage import value_storage_from_bytes
 
 
 @dataclass
@@ -204,13 +205,21 @@ def main() -> None:
     while time() - start_time < duration:
         connection.send_request_for(TelemetryID.ChannelPaused)
         connection.receive_for_request(TelemetryID.ChannelPaused)
-        _, paused = unpack_from("=??", connection.collector.bytearray, Connection.TELEMETRY_DATA_START)
+        _, paused = value_storage_from_bytes(
+            id_of_type("bool"),
+            connection.collector.bytearray,
+            Connection.TELEMETRY_DATA_START
+        )
         if paused:
             print("<paused>")
         else:
             connection.send_request_for(TelemetryID.ChannelGameTime)
             connection.receive_for_request(TelemetryID.ChannelGameTime)
-            initialized, game_time = unpack_from("=?I", connection.collector.bytearray, Connection.TELEMETRY_DATA_START)
+            initialized, game_time = value_storage_from_bytes(
+                id_of_type("u32"),
+                connection.collector.bytearray,
+                Connection.TELEMETRY_DATA_START
+            )
             print(game_time if initialized else ".")
         sleep(0.1)
 
