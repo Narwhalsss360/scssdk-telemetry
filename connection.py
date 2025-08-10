@@ -198,31 +198,40 @@ class Connection:
         if self.pending_request != request_type:
             raise CommunicationError(CommunicationResult.OtherRequestPending)
 
+    def __enter__(self) -> Connection:
+        if not self.connected:
+            self.connect()
+        return self
+
+    def __exit__(self, type_: type[BaseException] | None, value: BaseException | None, traceback: TracebackType | None) -> bool | None:
+        if self.connected:
+            self.disconnect()
+
 
 def main() -> None:
     SLEEP_TIME: float = 0.050
-    connection: Connection = Connection()
-    connection.connect()
-    print(f"Version: {VERSION}, Server Version: {connection.get_version()}")
+    with Connection() as connection:
+        print(f"Version: {VERSION}, Server Version: {connection.get_version()}")
 
-    start_time: float = time()
-    duration: float = 5 * 60
-    while time() - start_time < duration:
-        connection.request(TelemetryID.Master)
-        master, _ = master_structure.Master.from_bytes(
-            connection.collector.bytearray,
-            Connection.TELEMETRY_DATA_START
-        )
-        if master.channels.general.channel_paused[VALUE_STORAGE_VALUE]:
-            print("<paused>")
+        start_time: float = time()
+        duration: float = 5 * 60
+        while time() - start_time < duration:
+            connection.request(TelemetryID.Master)
+            master, _ = master_structure.Master.from_bytes(
+                connection.collector.bytearray,
+                Connection.TELEMETRY_DATA_START
+            )
+            if master.channels.general.channel_paused[VALUE_STORAGE_VALUE]:
+                print("<paused>")
+                sleep(SLEEP_TIME)
+                continue
+            speed_initialized, speed = master.channels.truck.truck_channel_speed
+            print(f"{format(speed, f"{"" if speed < 0 else " "}.2f") if speed_initialized else "---"} m/s")
             sleep(SLEEP_TIME)
-            continue
-        speed_initialized, speed = master.channels.truck.truck_channel_speed
-        print(f"{format(speed, f"{"" if speed < 0 else " "}.2f") if speed_initialized else "---"} m/s")
-        sleep(SLEEP_TIME)
-
-    connection.disconnect()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("^C")
