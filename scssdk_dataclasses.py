@@ -4,14 +4,6 @@ from os.path import isfile
 import json
 
 
-try:
-    import yaml
-
-    HAS_YAML = True
-except ImportError:
-    HAS_YAML = False
-
-
 REWRITE_JSON = False
 
 
@@ -54,7 +46,7 @@ TYPES_BY_ID: list[str] = [
     "scs_value_s64_t",
 ]
 
-SHORT_TYPENAME_TO_TYPE: dict[str, str] = {
+SHORT_TYPENAME_TO_TYPE: dict[str | None, str] = {
     None: CPP_INVALID_TYPE,
     "bool": "scs_value_bool_t",
     "s32": "scs_value_s32_t",
@@ -91,9 +83,25 @@ PRIMITIVE_TYPE_BY_ID: list[str] = [
 
 TYPE_SIZE_BY_ID: list[int] = [0, 1, 4, 4, 8, 4, 8, 12, 24, 12, 24, 40, 0, 8]
 
-PADDING_BY_TYPE: dict[str, dict[str, int]] = (
-    {"scs_value_dplacement_t": {"offset": 36, "size": 4}},
-)
+# id: [(offset, padding)...]
+PADDING_BY_TYPE_ID: list[list[tuple[int, int]]] = [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+        (36, 4)
+    ],
+    [],
+    []
+]
 
 
 def id_of_type(type: str) -> int:
@@ -104,7 +112,9 @@ def id_of_type(type: str) -> int:
             return TYPES_BY_ID.index(type)
         except ValueError:
             try:
-                return TYPES_BY_ID.index(SHORT_TYPENAME_TO_TYPE.get(type))
+                if short_type_name := SHORT_TYPENAME_TO_TYPE.get(type):
+                    return TYPES_BY_ID.index(short_type_name)
+                raise ValueError
             except ValueError:
                 try:
                     return PRIMITIVE_TYPE_BY_ID.index(type)
@@ -173,7 +183,7 @@ class EventAttribute:
     @property
     def primitive_type(self) -> str:
         return PRIMITIVE_TYPE_BY_ID[self.scs_type_id]
-    
+
     def __hash__(self) -> int:
         return hash(f"{self.event_info.macro if self.event_info else None}.{self.macro}")
 
@@ -187,10 +197,9 @@ class EventInfo:
 
     def __post_init__(self) -> None:
         self._event: Event | None = None
-        for i in range(len(self.attributes)):
-            if isinstance(self.attributes[i], dict):
-                self.attributes[i] = EventAttribute(**self.attributes[i])
-
+        for i, attribute in enumerate(self.attributes):
+            if isinstance(attribute, dict):
+                self.attributes[i] = EventAttribute(**attribute)
         for attribute in self.attributes:
             attribute._event_info = self
 
@@ -210,9 +219,9 @@ class Event:
     event_infos: list[EventInfo]
 
     def __post_init__(self) -> None:
-        for i in range(len(self.event_infos)):
-            if isinstance(self.event_infos[i], dict):
-                self.event_infos[i] = EventInfo(**self.event_infos[i])
+        for i, event_info in enumerate(self.event_infos):
+            if isinstance(event_info, dict):
+                self.event_infos[i] = EventInfo(**event_info)
         for event_info in self.event_infos:
             event_info._event = self
 
@@ -237,7 +246,7 @@ def load() -> tuple[
 def scssdk_dict(
     channels: list[Channel],
     events: list[Event],
-) -> None:
+) -> dict:
     return {
         "SCS_TELEMETRY_trailers_count": SCS_TELEMETRY_trailers_count,
         "TYPE_MACROS_BY_ID": TYPE_MACROS_BY_ID,
@@ -246,15 +255,18 @@ def scssdk_dict(
         "SHORT_TYPENAME_TO_TYPE": SHORT_TYPENAME_TO_TYPE,
         "PRIMITIVE_TYPE_BY_ID": PRIMITIVE_TYPE_BY_ID,
         "TYPE_SIZE_BY_ID": TYPE_SIZE_BY_ID,
-        "PADDING_BY_TYPE": PADDING_BY_TYPE,
+        "PADDING_BY_TYPE_ID": PADDING_BY_TYPE_ID,
         "channels": [asdict(dc) for dc in channels],
         "events": [asdict(dc) for dc in events],
     }
 
 
 def yamlfy() -> None:
-    if not HAS_YAML:
+    try:
+        import yaml
+    except ImportError:
         return
+
     with open(SCSSDK_TELEMETRY_FILE, encoding="utf-8") as file:
         scssdk: dict = json.loads(file.read())
     with open(

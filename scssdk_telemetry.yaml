@@ -76,9 +76,20 @@ TYPE_SIZE_BY_ID:
 - 0
 - 8
 PADDING_BY_TYPE:
-- scs_value_dplacement_t:
-    offset: 36
-    size: 4
+- []
+- []
+- []
+- []
+- []
+- []
+- []
+- []
+- []
+- []
+- []
+- - - 36
+    - 4
+- []
 channels:
 - macro: SCS_TELEMETRY_CHANNEL_local_scale
   expansion: local.scale
