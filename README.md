@@ -1,4 +1,4 @@
-# scssdk-telemetry
+# scssdk-telemetry ([truckconnect](./truckconnect.md))
 
 Telemetry channel/event/configuration metadata
 
