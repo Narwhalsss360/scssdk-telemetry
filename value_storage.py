@@ -61,6 +61,7 @@ class SCSValueFPlacement:
 
 @dataclass
 class SCSValueDPlacement:
+    PADDING = 4
     position: SCSValueDVector = field(default_factory=SCSValueDVector)
     orientation: SCSValueEuler = field(default_factory=SCSValueEuler)
 
@@ -68,7 +69,7 @@ class SCSValueDPlacement:
     def from_bytes(buffer, offset: int = 0) -> tuple[SCSValueDPlacement, int]:
         position, position_read = SCSValueDVector.from_bytes(buffer, offset)
         orientation, orientation_read = SCSValueEuler.from_bytes(buffer, offset + position_read)
-        return SCSValueDPlacement(position, orientation), position_read + orientation_read
+        return SCSValueDPlacement(position, orientation), position_read + orientation_read + SCSValueDPlacement.PADDING
 
 
 def szstr_from_bytes(buffer, offset: int = 0) -> tuple[str, int]:
