@@ -81,13 +81,26 @@
         0,
         8
     ],
-    "PADDING_BY_TYPE": [
-        {
-            "scs_value_dplacement_t": {
-                "offset": 36,
-                "size": 4
-            }
-        }
+    "PADDING_BY_TYPE_ID": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+            [
+                36,
+                4
+            ]
+        ],
+        [],
+        []
     ],
     "channels": [
         {
