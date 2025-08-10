@@ -3,11 +3,11 @@ from enum import Enum
 from socket import socket, AddressFamily, SocketKind, IPPROTO_TCP
 from dataclasses import dataclass
 from nstreamcom import Collector, encode_with_size
-from scssdk_dataclasses import id_of_type
-from truckconnect import Version, VERSION
+from truckconnect import Version, VERSION, telemetry
 from telemetry_id import TelemetryID
 from time import sleep, time
-from value_storage import value_storage_from_bytes
+import master_structure
+from value_storage import VALUE_STORAGE_INITIALIZED, VALUE_STORAGE_VALUE, SCSValueType, dynamic_bool_vector_from_bytes, value_storage_from_bytes
 
 
 @dataclass
@@ -180,6 +180,10 @@ class Connection:
         if TrailerIndexOrCount.from_int(self.collector.bytearray[2]) != trailer_index_or_count:
             raise CommunicationError(CommunicationResult.ReceivedOtherTrailerIndex)
 
+    def request(self, telemetry_id: TelemetryID, trailer_index_or_count: TrailerIndexOrCount | None = None):
+        self.send_request_for(telemetry_id, trailer_index_or_count)
+        self.receive_for_request(telemetry_id, trailer_index_or_count)
+
     def disconnect(self) -> None:
         if not self._connected:
             raise CommunicationError(CommunicationResult.NotConnected)
@@ -196,6 +200,7 @@ class Connection:
 
 
 def main() -> None:
+    SLEEP_TIME: float = 0.050
     connection: Connection = Connection()
     connection.connect()
     print(f"Version: {VERSION}, Server Version: {connection.get_version()}")
@@ -203,25 +208,18 @@ def main() -> None:
     start_time: float = time()
     duration: float = 5 * 60
     while time() - start_time < duration:
-        connection.send_request_for(TelemetryID.ChannelPaused)
-        connection.receive_for_request(TelemetryID.ChannelPaused)
-        (_, paused), _ = value_storage_from_bytes(
-            id_of_type("bool"),
+        connection.request(TelemetryID.Master)
+        master, _ = master_structure.Master.from_bytes(
             connection.collector.bytearray,
             Connection.TELEMETRY_DATA_START
         )
-        if paused:
+        if master.channels.general.channel_paused[VALUE_STORAGE_VALUE]:
             print("<paused>")
-        else:
-            connection.send_request_for(TelemetryID.ChannelGameTime)
-            connection.receive_for_request(TelemetryID.ChannelGameTime)
-            (initialized, game_time), _ = value_storage_from_bytes(
-                id_of_type("u32"),
-                connection.collector.bytearray,
-                Connection.TELEMETRY_DATA_START
-            )
-            print(game_time if initialized else ".")
-        sleep(0.1)
+            sleep(SLEEP_TIME)
+            continue
+        speed_initialized, speed = master.channels.truck.truck_channel_speed
+        print(f"{format(speed, f"{"" if speed < 0 else " "}.2f") if speed_initialized else "---"} m/s")
+        sleep(SLEEP_TIME)
 
     connection.disconnect()
 
