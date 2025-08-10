@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, Any
+from typing import Callable, Any, TypeGuard, TypeVar
 from dataclasses import dataclass, field
 from struct import calcsize, unpack_from
 from enum import Enum
@@ -114,55 +114,132 @@ def szstr_from_bytes(buffer, offset: int = 0) -> tuple[str, int]:
     return bytes(buffer[offset:end]).decode(), end - offset + 1
 
 
-type ValueTypes = bool | int | float | SCSValueFVector | SCSValueDVector | SCSValueEuler | SCSValueFPlacement | SCSValueDPlacement | str
+def dynamic_bool_vector_from_bytes(buffer, offset: int = 0) -> tuple[list[bool], int]:
+    array_size: int = unpack_from("=I", buffer, offset)[0]
+    offset += 4
+
+    if array_size == 0:
+        return [], 4
+
+    bools: list[bool] = []
+    byte: int = 0
+    bit: int = 0
+    for _ in range(array_size):
+        if bit == 8:
+            bit = 0
+            byte += 1
+        bools.append((buffer[offset + byte] & (1 << bit)) > 0)
+        bit += 1
+    return bools, byte + 1 + 4
 
 
-UNPACK_SPEC_BY_ID: list[str] = [
-    "",
-    "?",
-    "i",
-    "I",
-    "Q",
-    "f",
-    "d",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "q"
-]
+type ValueTypes = (
+    bool |
+    int |
+    float |
+    SCSValueFVector |
+    SCSValueDVector |
+    SCSValueEuler |
+    SCSValueFPlacement |
+    SCSValueDPlacement |
+    str |
+    list
+)
 
 
-FROM_BYTES_BY_ID: list[None | Callable[[Any, int], tuple[ValueTypes, int]]] = [
+type ValueStorageTypes = (
+    tuple[bool, ValueTypes] |
+    tuple[bool, ValueTypes, int] |
+    list[ValueTypes]
+)
+
+
+DESERIALIZER_BY_ID: list[Callable[[Any, int], tuple[ValueTypes, int]] | None] = [
     None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
+    (lambda buffer, offset: (unpack_from("=?", buffer, offset)[0], TYPE_SIZE_BY_ID[1])),
+    (lambda buffer, offset: (unpack_from("=i", buffer, offset)[0], TYPE_SIZE_BY_ID[2])),
+    (lambda buffer, offset: (unpack_from("=I", buffer, offset)[0], TYPE_SIZE_BY_ID[3])),
+    (lambda buffer, offset: (unpack_from("=Q", buffer, offset)[0], TYPE_SIZE_BY_ID[4])),
+    (lambda buffer, offset: (unpack_from("=f", buffer, offset)[0], TYPE_SIZE_BY_ID[5])),
+    (lambda buffer, offset: (unpack_from("=d", buffer, offset)[0], TYPE_SIZE_BY_ID[6])),
     SCSValueFVector.from_bytes,
     SCSValueDVector.from_bytes,
     SCSValueEuler.from_bytes,
     SCSValueFPlacement.from_bytes,
     SCSValueDPlacement.from_bytes,
     szstr_from_bytes,
-    None
+    (lambda buffer, offset: (unpack_from("=q", buffer, offset)[0], TYPE_SIZE_BY_ID[13])),
 ]
 
 
-def value_from_bytes(scs_value_type: int, buffer, offset: int = 0) -> tuple[ValueTypes, int]:
-    if unpack_spec := UNPACK_SPEC_BY_ID[scs_value_type]:
-        return unpack_from(f"={unpack_spec}", buffer, offset)[0], TYPE_SIZE_BY_ID[scs_value_type]
-    if (deserializer := FROM_BYTES_BY_ID[scs_value_type]) is not None:
-        return deserializer(buffer, offset)
-    raise ValueError("invalid scs value type")
+def value_storage_from_bytes(
+    scs_value_type: SCSValueType,
+    buffer,
+    offset: int = 0,
+    array_size: int | None = None,
+    dynamic_size: bool = False
+) -> tuple[ValueStorageTypes, int]:
+    if not (deserializer := DESERIALIZER_BY_ID[scs_value_type.value]):
+        raise ValueError("Invalid scs value value type")
+
+    if array_size is not None and dynamic_size:
+        raise ValueError("'array_size' and 'dynamic_size' are mutually exclusive")
+    if array_size is not None:
+        if array_size <= 0:
+            raise ValueError("'array_size' must be greater than 0")
+        initialized: bool = unpack_from("=?", buffer, offset)[0]
+        total_read = 1
+
+        count: int = unpack_from("=I", buffer, offset + total_read)[0]
+        total_read += 4
+
+        array: list = []
+        for _ in range(array_size):
+            deserialized, read = deserializer(buffer, offset + total_read)
+            array.append(deserialized)
+            total_read += read
+        return (initialized, array, count), total_read
+    elif dynamic_size:
+        if scs_value_type == SCSValueType.SCS_VALUE_TYPE_bool:
+            array, read = dynamic_bool_vector_from_bytes(buffer, offset)
+            return array, read
+
+        array_size = unpack_from("=I", buffer, offset)[0]
+        assert array_size is not None
+        total_read: int = 4
+        array: list = []
+        for _ in range(array_size):
+            value, read = deserializer(buffer, offset + total_read)
+            array.append(value)
+            total_read += read
+        return array, total_read
+
+    initialized: bool = unpack_from("=?", buffer, offset)[0]
+    value, read = deserializer(buffer, offset + 1)
+    return (initialized, value), 1 + read
 
 
-def value_storage_from_bytes(scs_value_type: int, buffer, offset: int = 0) -> tuple[tuple[bool, ValueTypes], int]:
-    if offset == len(buffer):
-        raise ValueError("offset out of bounds.")
-    value, read = value_from_bytes(scs_value_type, buffer, offset + 1)
-    return (buffer[offset] > 0, value), read + 1
+T = TypeVar("T")
+
+
+def value_storage_guard(storage: ValueStorageTypes, storage_type_instance: T) -> TypeGuard[tuple[bool, T]]:
+    return (
+        len(storage) == 2 and isinstance(storage[0], bool) and isinstance(storage[1], type(storage_type_instance))
+    )
+
+
+def value_array_storage_guard(storage: ValueStorageTypes, storage_type_instance: T) -> TypeGuard[tuple[bool, list[T], int]]:
+    return (
+        len(storage) == 3 and
+        isinstance(storage[0], bool) and
+        isinstance(storage[1], list) and
+        all(isinstance(x, type(storage_type_instance)) for x in storage[1]) and
+        isinstance(storage[2], int)
+    )
+
+
+def value_vector_storage_guard(storage: ValueStorageTypes, storage_type_instance: T) -> TypeGuard[list[T]]:
+    return (
+        isinstance(storage, list) and
+        all(isinstance(x, type(storage_type_instance)) for x in storage)
+    )
