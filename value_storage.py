@@ -1,8 +1,31 @@
 from __future__ import annotations
 from typing import Callable, Any
 from dataclasses import dataclass, field
-from scssdk_dataclasses import TYPE_SIZE_BY_ID
 from struct import calcsize, unpack_from
+from enum import Enum
+from scssdk_dataclasses import TYPE_SIZE_BY_ID
+
+
+class SCSValueType(Enum):
+    SCS_VALUE_TYPE_INVALID = 0
+    SCS_VALUE_TYPE_bool = 1
+    SCS_VALUE_TYPE_s32 = 2
+    SCS_VALUE_TYPE_u32 = 3
+    SCS_VALUE_TYPE_u64 = 4
+    SCS_VALUE_TYPE_float = 5
+    SCS_VALUE_TYPE_double = 6
+    SCS_VALUE_TYPE_fvector = 7
+    SCS_VALUE_TYPE_dvector = 8
+    SCS_VALUE_TYPE_euler = 9
+    SCS_VALUE_TYPE_fplacement = 10
+    SCS_VALUE_TYPE_dplacement = 11
+    SCS_VALUE_TYPE_string = 12
+    SCS_VALUE_TYPE_s64 = 13
+
+
+VALUE_STORAGE_INITIALIZED: int = 0
+VALUE_STORAGE_VALUE: int = 1
+VALUE_STORAGE_VALUES: int = 1
 
 
 @dataclass
