@@ -443,7 +443,7 @@ class Telemetry:
     def _load_channel_telemetries(channels: list[Channel]) -> list[Telemetry]:
         channel_telemetries: list[Telemetry] = []
         for channel in channels:
-            if channel.macro in EXCLUDE_CHANNELS:
+            if channel.macro in EXCLUDE_CHANNELS and __name__ == "__main__":
                 print(
                     f"Excluding {channel.macro}. Reason: {EXCLUDE_CHANNELS[channel.macro]}"
                 )
