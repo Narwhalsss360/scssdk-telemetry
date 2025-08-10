@@ -31,7 +31,7 @@ TYPES_BY_ID:
 - scs_value_string_t
 - scs_value_s64_t
 SHORT_TYPENAME_TO_TYPE:
-  'null': scs_invalid_t
+  null: scs_invalid_t
   bool: scs_value_bool_t
   s32: scs_value_s32_t
   u32: scs_value_u32_t
@@ -75,7 +75,7 @@ TYPE_SIZE_BY_ID:
 - 40
 - 0
 - 8
-PADDING_BY_TYPE:
+PADDING_BY_TYPE_ID:
 - []
 - []
 - []
@@ -87,8 +87,10 @@ PADDING_BY_TYPE:
 - []
 - []
 - []
-- - - 36
+- - !!python/tuple
+    - 36
     - 4
+- []
 - []
 channels:
 - macro: SCS_TELEMETRY_CHANNEL_local_scale

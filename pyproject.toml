@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scssdk-telemetry"
+authors = [
+    { name = "Franklyn Vasquez", email = "franklynvasquez24@gmail.com" },
+]
+description = "Telemetry channel/event/configuration metadata"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
+keywords = [
+    "scs",
+    "scssdk"
+]
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+version = "0.1.0"
+
+[project.urls]
+Repository = "https://github.com/Narwhalsss360/scssdk-telemetry"
