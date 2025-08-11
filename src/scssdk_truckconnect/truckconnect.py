@@ -60,7 +60,7 @@ TELEMETRY_EVENTS: list[str] = [
 EXCLUDE_CHANNELS: dict[str, str] = {  # macro and reason
     "SCS_TELEMETRY_TRUCK_CHANNEL_adblue_average_consumption": "prism::sdk does not find this channel."
 }
-INVALID_TELEMETRY_ID: int = -1
+INVALID_TELEMETRY_ID: int = 0xFF
 VERSION: Version = Version(0, 1, 0)
 # endregion
 
