@@ -1,6 +1,6 @@
 from pathlib import Path
-from truckconnect import name, telemetries
-from csharp import pascalify_snake
+from scssdk_truckconnect.truckconnect import name, telemetries
+from scssdk_truckconnect.csharp import pascalify_snake
 
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")

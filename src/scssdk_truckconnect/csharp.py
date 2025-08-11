@@ -1,21 +1,20 @@
 from pathlib import Path
-from scssdk_dataclasses import (
+from scssdk_telemetry.scssdk_dataclasses import (
     EventAttribute,
     SCS_TELEMETRY_trailers_count,
     TYPE_MACROS_BY_ID
 )
-from truckconnect import (
+from scssdk_truckconnect.truckconnect import (
     Telemetry,
     name,
     is_custom_channel,
     TelemetryType,
-    build_telemetries,
     master_telemetry,
     trailer_structure_telemetry,
     configuration_trailer_structure_telemetry,
     Channel
 )
-import truckconnect
+from scssdk_truckconnect import truckconnect
 
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")

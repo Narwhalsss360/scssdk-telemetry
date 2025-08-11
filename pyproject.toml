@@ -3,12 +3,12 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "scssdk-telemetry"
+name = "scssdk-truckconnect-telemetry"
 authors = [
     { name = "Franklyn Vasquez", email = "franklynvasquez24@gmail.com" },
 ]
-description = "Telemetry channel/event/configuration metadata"
-readme = { file = "README.md", content-type = "text/markdown" }
+description = "truckconnect Telemetry channel/event/configuration metadata"
+readme = { file = "truckconnect.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
 keywords = [
     "scs",
@@ -20,4 +20,4 @@ classifiers = [
 version = "0.1.0"
 
 [project.urls]
-Repository = "https://github.com/Narwhalsss360/scssdk-telemetry"
+Repository = "https://github.com/Narwhalsss360/scssdk-telemetry/tree/truckconnect"

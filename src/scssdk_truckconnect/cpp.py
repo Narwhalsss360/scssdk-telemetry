@@ -1,5 +1,6 @@
 from pathlib import Path
-from truckconnect import (
+from scssdk_truckconnect import truckconnect
+from scssdk_truckconnect.truckconnect import (
     Telemetry,
     name,
     is_custom_channel,
@@ -10,8 +11,7 @@ from truckconnect import (
     trailer_structure_telemetry,
     configuration_trailer_structure_telemetry,
 )
-import truckconnect
-from scssdk_dataclasses import (
+from scssdk_telemetry.scssdk_dataclasses import (
     Channel,
     Event,
     EventAttribute,

@@ -3,7 +3,7 @@ from typing import Any
 from enum import Enum
 from dataclasses import dataclass, field, asdict, fields
 from copy import deepcopy
-from scssdk_dataclasses import (
+from scssdk_telemetry.scssdk_dataclasses import (
     Channel,
     Event,
     EventInfo,
@@ -576,7 +576,7 @@ def prepare_distributable(master_telemetry: Telemetry) -> dict:
         return telemetry_data
 
     return {
-        "version": VERSION,
+        "version": str(VERSION),
         "master_telemetry": recurse(master_telemetry),
     }
 

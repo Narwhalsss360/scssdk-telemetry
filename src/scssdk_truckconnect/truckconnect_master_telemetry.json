@@ -1,6 +1,6 @@
 {
     "version": "0.1.0",
-    "telemetries": {
+    "master_telemetry": {
         "id": 0,
         "telemetry_type": "Structure",
         "identifier": "master",
@@ -1516,6 +1516,20 @@
                             {
                                 "id": 80,
                                 "telemetry_type": "Channel",
+                                "identifier": "truck_channel_adblue_average_consumption",
+                                "constant_size": true,
+                                "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_adblue_average_consumption",
+                                "expansion": "truck.adblue.consumption.average",
+                                "type": "float",
+                                "indexed": false,
+                                "simple_name": "truck_channel_adblue_average_consumption",
+                                "is_trailer_channel": false,
+                                "max_count": 1,
+                                "custom_channel": false
+                            },
+                            {
+                                "id": 81,
+                                "telemetry_type": "Channel",
                                 "identifier": "truck_channel_oil_pressure",
                                 "constant_size": true,
                                 "macro": "SCS_TELEMETRY_TRUCK_CHANNEL_oil_pressure",
@@ -1528,7 +1542,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 81,
+                                "id": 82,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_oil_pressure_warning",
                                 "constant_size": true,
@@ -1542,7 +1556,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 82,
+                                "id": 83,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_oil_temperature",
                                 "constant_size": true,
@@ -1556,7 +1570,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 83,
+                                "id": 84,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_water_temperature",
                                 "constant_size": true,
@@ -1570,7 +1584,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 84,
+                                "id": 85,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_water_temperature_warning",
                                 "constant_size": true,
@@ -1584,7 +1598,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 85,
+                                "id": 86,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_battery_voltage",
                                 "constant_size": true,
@@ -1598,7 +1612,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 86,
+                                "id": 87,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_battery_voltage_warning",
                                 "constant_size": true,
@@ -1612,7 +1626,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 87,
+                                "id": 88,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_electric_enabled",
                                 "constant_size": true,
@@ -1626,7 +1640,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 88,
+                                "id": 89,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_engine_enabled",
                                 "constant_size": true,
@@ -1640,7 +1654,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 89,
+                                "id": 90,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_lblinker",
                                 "constant_size": true,
@@ -1654,7 +1668,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 90,
+                                "id": 91,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_rblinker",
                                 "constant_size": true,
@@ -1668,7 +1682,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 91,
+                                "id": 92,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_hazard_warning",
                                 "constant_size": true,
@@ -1682,7 +1696,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 92,
+                                "id": 93,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_lblinker",
                                 "constant_size": true,
@@ -1696,7 +1710,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 93,
+                                "id": 94,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_rblinker",
                                 "constant_size": true,
@@ -1710,7 +1724,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 94,
+                                "id": 95,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_parking",
                                 "constant_size": true,
@@ -1724,7 +1738,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 95,
+                                "id": 96,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_low_beam",
                                 "constant_size": true,
@@ -1738,7 +1752,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 96,
+                                "id": 97,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_high_beam",
                                 "constant_size": true,
@@ -1752,7 +1766,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 97,
+                                "id": 98,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_aux_front",
                                 "constant_size": true,
@@ -1766,7 +1780,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 98,
+                                "id": 99,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_aux_roof",
                                 "constant_size": true,
@@ -1780,7 +1794,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 99,
+                                "id": 100,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_beacon",
                                 "constant_size": true,
@@ -1794,7 +1808,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 100,
+                                "id": 101,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_brake",
                                 "constant_size": true,
@@ -1808,7 +1822,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 101,
+                                "id": 102,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_light_reverse",
                                 "constant_size": true,
@@ -1822,7 +1836,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 102,
+                                "id": 103,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wipers",
                                 "constant_size": true,
@@ -1836,7 +1850,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 103,
+                                "id": 104,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_dashboard_backlight",
                                 "constant_size": true,
@@ -1850,7 +1864,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 104,
+                                "id": 105,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_differential_lock",
                                 "constant_size": true,
@@ -1864,7 +1878,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 105,
+                                "id": 106,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_lift_axle",
                                 "constant_size": true,
@@ -1878,7 +1892,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 106,
+                                "id": 107,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_lift_axle_indicator",
                                 "constant_size": true,
@@ -1892,7 +1906,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 107,
+                                "id": 108,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_trailer_lift_axle",
                                 "constant_size": true,
@@ -1906,7 +1920,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 108,
+                                "id": 109,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_trailer_lift_axle_indicator",
                                 "constant_size": true,
@@ -1920,7 +1934,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 109,
+                                "id": 110,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wear_engine",
                                 "constant_size": true,
@@ -1934,7 +1948,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 110,
+                                "id": 111,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wear_transmission",
                                 "constant_size": true,
@@ -1948,7 +1962,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 111,
+                                "id": 112,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wear_cabin",
                                 "constant_size": true,
@@ -1962,7 +1976,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 112,
+                                "id": 113,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wear_chassis",
                                 "constant_size": true,
@@ -1976,7 +1990,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 113,
+                                "id": 114,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wear_wheels",
                                 "constant_size": true,
@@ -1990,7 +2004,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 114,
+                                "id": 115,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_odometer",
                                 "constant_size": true,
@@ -2004,7 +2018,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 115,
+                                "id": 116,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_navigation_distance",
                                 "constant_size": true,
@@ -2018,7 +2032,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 116,
+                                "id": 117,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_navigation_time",
                                 "constant_size": true,
@@ -2032,7 +2046,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 117,
+                                "id": 118,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_navigation_speed_limit",
                                 "constant_size": true,
@@ -2046,7 +2060,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 118,
+                                "id": 119,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_susp_deflection",
                                 "constant_size": true,
@@ -2060,7 +2074,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 119,
+                                "id": 120,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_on_ground",
                                 "constant_size": true,
@@ -2074,7 +2088,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 120,
+                                "id": 121,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_substance",
                                 "constant_size": true,
@@ -2088,7 +2102,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 121,
+                                "id": 122,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_velocity",
                                 "constant_size": true,
@@ -2102,7 +2116,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 122,
+                                "id": 123,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_steering",
                                 "constant_size": true,
@@ -2116,7 +2130,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 123,
+                                "id": 124,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_rotation",
                                 "constant_size": true,
@@ -2130,7 +2144,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 124,
+                                "id": 125,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_lift",
                                 "constant_size": true,
@@ -2144,7 +2158,7 @@
                                 "custom_channel": false
                             },
                             {
-                                "id": 125,
+                                "id": 126,
                                 "telemetry_type": "Channel",
                                 "identifier": "truck_channel_wheel_lift_offset",
                                 "constant_size": true,
