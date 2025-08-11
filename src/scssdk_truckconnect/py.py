@@ -4,7 +4,7 @@ from scssdk_truckconnect.csharp import pascalify_snake
 
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
-TAB_CHARS: str = "\t"
+TAB_CHARS: str = " " * 4
 
 
 def telemetry_id() -> str:
