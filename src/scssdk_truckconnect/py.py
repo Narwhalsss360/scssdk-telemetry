@@ -1,10 +1,11 @@
 from pathlib import Path
-from scssdk_truckconnect.truckconnect import name, telemetries
+from scssdk_truckconnect.truckconnect import name, telemetries, INVALID_TELEMETRY_ID
 from scssdk_truckconnect.csharp import pascalify_snake
 
 
 OUTPUT_FOLDER: Path = Path("generated.gitignore/")
 TAB_CHARS: str = "\t"
+
 
 def telemetry_id() -> str:
     out: str = (
@@ -14,6 +15,7 @@ def telemetry_id() -> str:
     )
     for i, telemetry in enumerate(telemetries()):
         out += f"{TAB_CHARS}{pascalify_snake(name(telemetry))} = {i}\n"
+    out += f"{TAB_CHARS}Invalid = {INVALID_TELEMETRY_ID}\n"
     return out
 
 
