@@ -1,13 +1,15 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict
 from os.path import isfile
+from sys import argv, stderr
+from pathlib import Path
 import json
 
 
+TAB_CHARS: str = " " * 2
 REWRITE_JSON = False
-
-
 SCS_TELEMETRY_trailers_count: int = 10
+
 
 TYPE_MACROS_BY_ID: list[str] = [
     "SCS_VALUE_TYPE_INVALID",
@@ -226,16 +228,18 @@ class Event:
             event_info._event = self
 
 
-SCSSDK_TELEMETRY_FILE: str = "scssdk_telemetry.json"
+SCSSDK_TELEMETRY_FILE_NAME: str = "scssdk_telemetry"
+SCSSDK_TELEMETRY_JSON_FILE: Path = Path(__file__).parent / Path(f"{SCSSDK_TELEMETRY_FILE_NAME}.json")
+SCSSDK_TELEMETRY_YAML_FILE: Path = Path(__file__).parent / Path(f"{SCSSDK_TELEMETRY_FILE_NAME}.yaml")
 
 
 def load() -> tuple[
     list[Channel],
     list[Event],
 ]:
-    if not isfile(SCSSDK_TELEMETRY_FILE):
-        raise FileNotFoundError(f"File {SCSSDK_TELEMETRY_FILE} doesn't exist")
-    with open(SCSSDK_TELEMETRY_FILE, encoding="utf-8") as file:
+    if not isfile(SCSSDK_TELEMETRY_JSON_FILE):
+        raise FileNotFoundError(f"File {SCSSDK_TELEMETRY_JSON_FILE} doesn't exist")
+    with open(SCSSDK_TELEMETRY_JSON_FILE, encoding="utf-8") as file:
         scssdk: dict = json.loads(file.read())
     return (
         [Channel(**channel) for channel in scssdk["channels"]],
@@ -261,34 +265,98 @@ def scssdk_dict(
     }
 
 
-def yamlfy() -> None:
+def yamlfy() -> bool:
     try:
         import yaml
     except ImportError:
-        return
+        return False
 
-    with open(SCSSDK_TELEMETRY_FILE, encoding="utf-8") as file:
+    with open(SCSSDK_TELEMETRY_JSON_FILE, encoding="utf-8") as file:
         scssdk: dict = json.loads(file.read())
     with open(
-        SCSSDK_TELEMETRY_FILE.replace(".json", ".yaml"), "w", encoding="utf-8"
+        SCSSDK_TELEMETRY_YAML_FILE, "w", encoding="utf-8"
     ) as file:
         file.write(yaml.dump(scssdk, sort_keys=False))
-    print("Yamlfied!")
+    return True
 
 
 def main() -> None:
+    json_file: str = ""
+    yaml_file: str = ""
+    list_all: bool = False
+
+    next_is: str | None = None
+    for arg in argv[1:]:
+        if next_is == "json":
+            json_file = arg
+            next_is = None
+        elif next_is == "yaml":
+            yaml_file = arg
+            next_is = None
+        elif arg == "help":
+            print("--json: json output file\n--yaml: yaml output file")
+            return
+        elif arg == "--list":
+            list_all = True
+        elif arg == "--json":
+            next_is =  "json"
+        elif arg == "--yaml":
+            next_is = "yaml"
+        else:
+            print(f"Unknown argument '{arg}'. parameters are '--json' and '--yaml'", file=stderr)
+            return
+
     channels, events = load()
     print(f"Loaded {len(channels)} channels, and {len(events)} events.")
-    yamlfy()
+    if yamlfy() and not list_all and not json_file and not yaml_file:
+        print("Yamlfied!")
 
     if REWRITE_JSON:
-        with open(SCSSDK_TELEMETRY_FILE, "w", encoding="utf-8") as file:
+        with open(SCSSDK_TELEMETRY_JSON_FILE, "w", encoding="utf-8") as file:
             file.write(
                 json.dumps(
                     scssdk_dict(channels, events),
                     indent=4,
                 )
             )
+
+
+    if list_all:
+        print("Channels:")
+        for channel in channels:
+            print(f"{TAB_CHARS}{channel.macro}: {channel.scs_type}{f"[{channel.max_count}]" if channel.indexed else ""}")
+        print("Events:")
+        for event in events:
+            print(f"{TAB_CHARS}{event.macro}")
+            for event_info in event.event_infos:
+                print(f"{TAB_CHARS * 2}{event_info.macro}")
+                for attribute in event_info.attributes:
+                    print(f"{TAB_CHARS * 3}{attribute.macro}: {attribute.scs_type}{f"[...]" if attribute.indexed else ""}")
+
+    if json_file:
+        with open(json_file, "w", encoding="utf-8") as file:
+            file.write(
+                json.dumps(
+                    scssdk_dict(channels, events),
+                    indent=4,
+                )
+            )
+        if not list_all:
+            print(json_file)
+
+    if yaml_file:
+        try:
+            import yaml
+        except ImportError:
+            print(f"ERROR: The yaml module (PyYAML) is not installed.", file=stderr)
+            return
+
+        with open(
+            SCSSDK_TELEMETRY_YAML_FILE, "w", encoding="utf-8"
+        ) as file:
+            file.write(yaml.dump(scssdk_dict(channels, events), sort_keys=False))
+        if not list_all:
+            print(yaml_file)
 
 
 if __name__ == "__main__":
