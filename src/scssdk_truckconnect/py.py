@@ -95,9 +95,98 @@ def telemetry_id() -> str:
     return out
 
 
+def master_structure() -> str:
+    out: str = (
+        "from __future__ import annotations\n"
+        "from dataclasses import dataclass, field\n"
+        "from scssdk_telemetry.scssdk_dataclasses import SCS_TELEMETRY_trailers_count\n"
+        "from truckconnect.value_storage import (\n"
+        f"{TAB_CHARS}SCSValueType,\n"
+        f"{TAB_CHARS}BufferType,\n"
+        f"{TAB_CHARS}value_storage_from_bytes,\n"
+        f"{TAB_CHARS}value_array_storage_from_bytes,\n"
+        f"{TAB_CHARS}value_vector_storage_from_bytes,\n"
+        f"{TAB_CHARS}is_value_storage,\n"
+        f"{TAB_CHARS}is_value_array_storage,\n"
+        f"{TAB_CHARS}is_value_vector_storage,\n"
+        f"{TAB_CHARS}SCSValueFVector,\n"
+        f"{TAB_CHARS}SCSValueFPlacement,\n"
+        f"{TAB_CHARS}SCSValueDPlacement\n"
+        ")\n"
+        "\n\n"
+    )
+
+    dependency_sorted: list[Telemetry] = list(filter(
+        lambda telemetry: telemetry.is_structure or telemetry.is_event_info,
+        telemetries()[::-1]
+    ))
+    dependency_sorted.sort(key=lambda telemetry: 3 if telemetry == master_telemetry() else -telemetry.rank)
+    for i, telemetry in enumerate(dependency_sorted):
+        out += (
+            "@dataclass\n"
+            f"class {pascalify_snake(name(telemetry))}:\n"
+        )
+
+        if telemetry.is_structure:
+            for child in telemetry.as_structure.children:
+                if child in (trailer_structure_telemetry(), configuration_trailer_structure_telemetry()):
+                    out += f"{TAB_CHARS}{name(child)}: list[{annotation(child)}] = field(default_factory=lambda: [])\n"
+                else:
+                    out += f"{TAB_CHARS}{name(child)}: {annotation(child)} = field(default_factory={default_factory(child)})\n"
+
+            out += (
+                "\n"
+                f"{TAB_CHARS}@staticmethod\n"
+                f"{TAB_CHARS}def from_bytes(buffer: BufferType, offset: int = 0) -> tuple[{pascalify_snake(name(telemetry))}, int]:\n"
+                f"{TAB_CHARS * 2}{name(telemetry)}: {pascalify_snake(name(telemetry))} = {pascalify_snake(name(telemetry))}()\n"
+                f"{TAB_CHARS * 2}total_read: int = 0\n"
+            )
+
+            for child in telemetry.as_structure.children:
+                if child in (trailer_structure_telemetry(), configuration_trailer_structure_telemetry()):
+                    out += (
+                        f"{TAB_CHARS * 2}for _ in range(SCS_TELEMETRY_trailers_count):\n"
+                        f"{TAB_CHARS * 3}deserialized, read = {deserializer_for(child, offset="offset + total_read")}\n"
+                        f"{TAB_CHARS * 3}{name(telemetry)}.{name(child)}.append(deserialized)\n"
+                        f"{TAB_CHARS * 3}total_read += read\n\n"
+                    )
+                else:
+                    out += (
+                        f"{TAB_CHARS * 2}deserialized, read = {deserializer_for(child, offset="offset + total_read")}\n"
+                        f"{TAB_CHARS * 2}assert {is_storage_type_guard(child, "deserialized")}\n"
+                        f"{TAB_CHARS * 2}{name(telemetry)}.{name(child)} = deserialized\n"
+                        f"{TAB_CHARS * 2}total_read += read\n\n"
+                    )
+            out += f"{TAB_CHARS * 2}return {name(telemetry)}, total_read"
+        else: # telemetry.is_event_info
+            for attribute in telemetry.as_event_info.attributes:
+                out += f"{TAB_CHARS}{name(attribute)}: {annotation(attribute)} = field(default_factory={default_factory(attribute)})\n"
+
+            out += (
+                "\n"
+                f"{TAB_CHARS}@staticmethod\n"
+                f"{TAB_CHARS}def from_bytes(buffer: BufferType, offset: int = 0) -> tuple[{pascalify_snake(name(telemetry))}, int]:\n"
+                f"{TAB_CHARS * 2}{name(telemetry)}: {pascalify_snake(name(telemetry))} = {pascalify_snake(name(telemetry))}()\n"
+                f"{TAB_CHARS * 2}total_read: int = 0\n"
+            )
+
+            for attribute in telemetry.as_event_info.attributes:
+                out += (
+                    f"{TAB_CHARS * 2}deserialized, read = {deserializer_for(attribute, offset="offset + total_read")}\n"
+                    f"{TAB_CHARS * 2}assert {is_storage_type_guard(attribute, "deserialized")}\n"
+                    f"{TAB_CHARS * 2}{name(telemetry)}.{name(attribute)} = deserialized\n"
+                    f"{TAB_CHARS * 2}total_read += read\n\n"
+                )
+            out += f"{TAB_CHARS * 2}return {name(telemetry)}, total_read"
+        if i != len(dependency_sorted) - 1:
+            out += "\n\n"
+    return out
+
+
 def generate() -> dict[str, str]:
     return {
-        "telemetry_id.py": telemetry_id()
+        "telemetry_id.py": telemetry_id(),
+        "master_structure.py": master_structure()
     }
 
 
