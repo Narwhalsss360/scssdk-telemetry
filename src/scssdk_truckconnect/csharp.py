@@ -160,8 +160,6 @@ def metadata_class(telemetries: list[Telemetry], tabcount: int = 1) -> str:
         f"{tabstr}public TelemetryType TelemetryType {{ get; init; }}\n\n" +
         f"{tabstr}public TelemetryID ID {{ get; init; }}\n\n" +
         f"{tabstr}public bool ConstantSize {{ get; init; }}\n\n" +
-        f"{tabstr}public UInt32 MasterOffset {{ get; init; }}\n\n" +
-        f"{tabstr}public UInt32 StructureOffset {{ get; init; }}\n\n" +
         fullprop(tabcount + 1, "string", "_macro", "\"\"", "string", "Macro", non_structure_getter("_macro"), non_structure_setter("_macro")) +
         fullprop(tabcount + 1, "bool", "_indexed", "false", "bool", "Indexed", non_structure_getter("_indexed"), non_structure_setter("_indexed")) +
         fullprop(tabcount + 1, "UInt32", "_maxCount", "0", "UInt32", "MaxCount", channel_getter("_maxCount"), channel_setter("_maxCount")) +
@@ -186,27 +184,12 @@ def metadata_class(telemetries: list[Telemetry], tabcount: int = 1) -> str:
             f"ConstantSize = {cs_value(telemetry.constant_size)}, "
         )
 
-        if telemetry.is_structure:
-            if telemetry == master_telemetry():
-                out += (
-                    f"MasterOffset = 0, "
-                    f"StructureOffset = 0 "
-                )
-            else:
-                out += (
-                    f"MasterOffset = 0, /*?*/ "
-                    f"StructureOffset = 0 /*?*/ "
-                )
-        elif telemetry.is_event_info:
+        if telemetry.is_event_info:
             out += (
-                f"MasterOffset = 0, /*?*/ "
-                f"StructureOffset = 0, /*?*/ "
                 f"Macro = \"{telemetry.as_event_info.expansion}\" "
             )
-        else: #=> telemetry.is_channel
+        elif telemetry.is_channel:
             out += (
-                f"MasterOffset = 0, /*?*/ "
-                f"StructureOffset = 0, /*?*/ "
                 f"Macro = \"{telemetry.as_channel.expansion}\", "
                 f"Indexed = {cs_value(telemetry.as_channel.indexed)}, "
                 f"MaxCount = {telemetry.as_channel.max_count} ,"
