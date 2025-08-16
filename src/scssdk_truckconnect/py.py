@@ -130,7 +130,7 @@ def master_structure() -> str:
         if telemetry.is_structure:
             for child in telemetry.as_structure.children:
                 if child in (trailer_structure_telemetry(), configuration_trailer_structure_telemetry()):
-                    out += f"{TAB_CHARS}{name(child)}: list[{annotation(child)}] = field(default_factory=lambda: [])\n"
+                    out += f"{TAB_CHARS}{name(child)}: list[{annotation(child)}] = field(default_factory=lambda: [{pascalify_snake(name(child))}() for _ in range(SCS_TELEMETRY_trailers_count)])\n"
                 else:
                     out += f"{TAB_CHARS}{name(child)}: {annotation(child)} = field(default_factory={default_factory(child)})\n"
 
