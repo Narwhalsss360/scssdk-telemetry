@@ -4,7 +4,8 @@ from scssdk_truckconnect import (
     truckconnect,
     cpp,
     csharp,
-    py
+    py,
+    docs
 )
 
 
@@ -12,7 +13,8 @@ MAINS: dict[str, Callable] = {
     "truckconnect": truckconnect.main,
     "cpp": cpp.main,
     "csharp": csharp.main,
-    "py": py.main
+    "py": py.main,
+    "docs": docs.main
 }
 
 
